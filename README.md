@@ -1,0 +1,2 @@
+# Improve-path-finding-in-the-Lightning-Network-with-the-Health-Improvement-Algorithm
+We introduce a health measure for the lightning network that is created from the overall health of single par- ticipants. The health of a node is defined of how even the funds of the node are distributed over its channels. We provide a re-balancing algorithm together with a communications protocol that allows a subset of nodes to improve their health.
