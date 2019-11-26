@@ -148,11 +148,16 @@ class Network:
             rebalance_options.append((c, amt))
         if len(rebalance_options) < 1:
             return -1
-        option = random.sample(rebalance_options, 1)[0]
-        circle = option[0]
-        amt = option[1]
-        self.__rebalance_circle(circle, amt)
-        return amt
+        k = int(len(rebalance_options)/2) + 1
+        k = 1
+        total_amt = 0
+        for option in random.sample(rebalance_options, k):
+            circle = option[0]
+            amt = option[1]
+            tmp_amt = max(1, int(amt/k))
+            total_amt += tmp_amt
+            self.__rebalance_circle(circle, tmp_amt)
+        return total_amt
         #print(node, circle)
 
 
