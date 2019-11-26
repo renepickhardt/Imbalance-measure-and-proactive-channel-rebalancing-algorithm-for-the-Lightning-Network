@@ -1,0 +1,207 @@
+\documentclass[a4paper]{paper} 
+%\usepackage{babel}
+\usepackage{hyperref}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{pdfpages}
+%\usepackage{graphicx}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\graphicspath{{img/}}
+\title{Improve path finding in the Lightning Network with the Health Improvement Algorithm}
+\subtitle{Draft version}
+\author{Rene Pickhardt} 
+\institution{NTNU Gjovik} 
+
+\begin{document} 
+\twocolumn[\maketitle 
+\hrule 
+\begin{abstract}
+  We introduce a health measure for the lightning network that is created from the overall health of single participants.
+  The health of a node is defined of how even the funds of the node are distributed over its channels.
+  We provide a re-balancing algorithm together with a communications protocol that allows a subset of nodes to improve their health.
+  We test if all participants should be interested in joining to follow this health improvement algorithm.
+  We measure started from unhealthy and unbalanced networks how quickly the network improves its health.
+\end{abstract}
+
+\begin{keywords}
+Optimization, convex optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, agent based systems, collaborative problem solving, 
+\end{keywords}
+\hrule\bigskip
+]
+
+\section{Introduction}
+A major problem within privacy aware payment channel networks such as the lightning network is that the local balance of channels is not being shared with the rest of the network.
+For privacy reasons the transport layer for routing payments is a source based onion routing scheme like the Sphinx Mix format \cite{danezis2009sphinx}.
+Thus finding a path through the network is currently achieved by probing paths until one is found in which each channel has enough local liquidity to forward the payment.
+It has been shown that probing for paths can take up to several minutes including 100 or more tries.\cite{decker2019lnconf}
+
+One suggestion is that nodes on the lightning network could proactively re-balance their channels.
+If the channel capacity was always perfectly split in half as the local balance path finding would in fact become as trivial as computing Dijkstra's algorithm.
+It is trivial to see that neither initially nor after conducting payments the funds are distributed evenly among the participants so that we cannot have the goal to design an algorithm that helps to re-balance the funds fully evenly without asking participants to give money to other participants for fee which obviously is economically infeasible. 
+
+We introduce a local and a global health measure for privacy aware payment channel networks which nodes can work towards achieving.
+\section{Related Work}
+While the Lightning Network White paper \cite{poon2016bitcoin} does not discuss path finding and states routing as an easy problem it is generally recognized that pathfinding on the lightning network is a difficult problem \cite{piatkivskyi2018split}, \cite{prihodko2016flare}, \cite{bagaria2019boomerang}, \cite{pickhardt2019pathfinding}, \cite{grunspan2018ant}, \cite{sivaraman2018routing}.
+There is already research being conducted in the field of rebalancing channels \cite{khalil2017revive} which was more about the cryptographic protocols used to make sure that participants can enforcethe rebalancing that was agreed upon.
+There are rebalancing operations for c-lightning\footnote{\url{https://github.com/lightningd/plugins/tree/master/rebalance}} and for lnd\footnote{\url{https://github.com/bitromortac/lndmanage}}.
+In particular the idea of Just in time rebalancing while fulfilling routing requsts \cite{pickhardt2019jit} is already being implemented for c-lightning\footnote{\url{https://github.com/lightningd/plugins/pull/66}}. 
+
+\textbf{TODO:} Add statistical papers of the lightning network. Payment reliability and path finding methods (similar to PhD Proposal)
+
+
+\section{Formalization and Assumptions}
+Let $G=(N,E,c)$ be a privacy aware payment channel network with a finit set of nodes.
+The payment channels are the edges in the network such that $E\subset N\times N$.
+Additionally we have a publically known capacity function $c: E\longrightarrow \mathbb{N}$ that assignes a cpacity to every edge of the network.
+For every edge $e=(u,v)$ we denote $e_u:=(e,u)$ as the first participant of the channel and $e_v=(e,v)$ as the second participant.
+Every node can be assigned its set of channels which we encode with the neighbor function $n : N \longrightarrow 2^{E}$.
+Similarly if we want to denote the set of neighboring nodes we use the function $n_n : N \longrightarrow 2^{N}$.
+Natually the cpacity of every channel $e=(u,v)$ is privately split into the local balances with the balance function $b: E\times N\longrightarrow\mathbb{N}$ such that $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$.
+
+We define the local balance coefficient for a participant $e_u$ of a channel as  $\beta_u = \frac{b(e_u)}{c(e)}$.
+This is just the relative amount of funds that participant $u$ has in the channel $e$.
+Note since $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$ we also have $\beta_u + \beta_v=1$
+
+To make the following formulas easier to read we set $U:=n_n(u)$ the set of channel partners of participant $u$.
+The total funds of a participant $u$ are denoted as $\tau_u:=\displaystyle{\sum_{e\in U}b(e_u)}$.
+similarly the total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(u)}$.
+Using the last two definitions we can define the global balance coefficient for a participant $u$ as $\gamma_u = \frac{\tau_u}{\kappa_u}$.
+
+We measure the health of a node $u$ by comparing its local balances coefficients with its global balance coefficient.
+Our model assumption is that $u$ is considered more healthy the smaller the difference of those coefficients is.
+The statistically sound way of conducting this comparison is to compute the Gini coefficient $G_u$ of the distribution of $u$'s local channel balances $\beta_{u_1},...,\beta_{u_d}$ where $d=|U|$ is the node degree of $u$.
+
+$G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \beta_i - \beta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \beta_j}}$
+
+It is worthwhile to mention and easy to see that if and only if the Ginicoefficient of the local channel balance coefficients takes the value $0$ the local channel balance coefficents are all the same and have exactly the value as the global channel balance coefficient. \footnote{formaly proove this?}
+
+Finally the health $H$ of the network is defined as the mean over the health of the participants that is: $H = \displaystyle{\frac{1}{|N|}\sum_{n\in N}G_n}$.
+Again a perfect health of the network would be achieved if $H$ takes the value of $0$ where as the health is poor if the value of $H$ is close to 1. 
+
+Our goal is to find a balance function $b$ which minimizes $H$ given a parivacy aware payment channel network with initial distribution of funds $\tau_{u_1},\dots,\tau_{u_n}$.
+The constraint to this optimization problem is to fix the total funds $\tau_u$ for every $u \in N$.
+
+In Figure \ref{fig:unbalanced} you can see an a small network consisting of $3$ nodes in which the balance are distributed unevenly.
+The global balance coefficients for every node are $\gamma_u=0.5$.
+The $\beta$ values for each node are $0$ for the channel in which the node owns no funds and $1$ for the channel in which the node owns all the funds.
+This leads to a local health for every node of $0.5$ and a global health of the network of $0.5$.
+Now in Figure \ref{fig:balanced} we see the balanced view of this network.
+The total funds $\tau_u$ stayed constant as it is the constrain of the optimization problem.
+However since the funds have been rebalanced the local balance coefficients $\beta$ of every channel now take the value of $0.5$ leading to a local health coefficient $G_u=0$ for every node $u\in N$.
+This in turn leads to a perfectly health network with $H=0$.
+
+Considering multi path payments in both cases of the network every node was able to pay the full funds they owned to every other participant.
+If the edge $e=(A,B)$ was removed in the halthy network $A$ would still be able to pay $B$ with a path over $C$.
+This would not be possible in the unhealthy network as the funds where distributed poorly.
+It is worthwhile to mention that not every network can achieve a perfect global health $H=0$.
+For example let us look at figure \ref{fig:unhealthy} we see due to the fact that the total funds are not distributed evenly (node $D$ owns twice as many funds as the others.
+That there can also be no perfect rebalancing of funds resulting in figure \ref{fig:unhealthy_rebalanced}.
+
+\subsection{Description of the algorithm}
+While it seems that our optimization problem seems to be convex and yields a clear solution in the context of privacy aware payment channel networks the balance function $b$ is not known globally or to any of the participants.
+Thus optimization techniques that solve the optimization problem globally and distribute the solution amoung participants are of little use.
+We thus focus on an agent based strategy that every participant can execute to improove its own health.
+\begin{enumerate}
+\item A node $u$ will compute its global balance coeffient $\gamma_u$.
+\item $u$ will then compute the local balance coefficients $\beta_{u_1},\dots,\beta_{u_d}$ for its $d$ channels.
+\item The node will select the channel $e=(u,u_i)$ with the highes difference between its local and global channel balance coefficient i.e.: $i = \displaystyle{\argmax_{i=1}^d\{\beta_{u_i} - \gamma_u\}}$. Note that we do not need to take absolute values as $u$ will only b able to initiate a rebalancing operation by sending money which means decreasing its value of $\beta_{u_i}$.
+\item Now the node searches for a circular payment along this channel. The amount of that payment should decrese the value of $\beta_{u_i}$ to that of $\gamma_u$ and can be computed as $x = c(e)\cdot (\beta_{u_i}-\gamma_u)$. Also the end of the circle should be a channel for which the local balance coefficient is smaller than the global balance coefficient. 
+ \item Repeat all steps as long as the local balance coefficients are still not even.
+\end{enumerate}
+
+Assuming that a circular path exist it is easy to see that the algorithm will in every step make the distribution of local balance coefficients more even.
+The reason is that we started with the most uneven one and always balance against channels that are in need for a higher local balance coefficient.
+\textbf{todo: do we need a correctness proof. There might actually be some issues with channel that have varying capacities. The proof could also work by starting from the smallest unit of account instead of having higher units of account to start with...}
+
+Obviously finding a circulary rebalancing path is tricky as the balances of the network are not known.
+Also rebalancing might worsen the health of another node along the path.
+Also in the current implementation of the Lightning Network such a circular payment will cost the initator some routing fee which economically deincentivizes the node to improve its health.
+We take the idea of cost free rebalancing in the friend of a friend network as it was first proposed in the context of JIT-Routing \cite{pickhardt2019jit}.
+Due to the anonymity of the Onion routing one can easily probe the balance of the channels of ones channel partner.
+Thus from a privacy perspective introducing a new gossip query that asks channel partners to return channels on which they want to rebalance up to $x$ tokens seems reasonable.
+In order to calculate a circular path node $u$ will query $u_i$ for the channels on which $u_i$ would be willing to forward the amount $x$ in a circular way such that $u_i$ would also improove its local health $G_{u_i}$.
+In the same way $u$ will ask the nodes though which channels it would like to receive the funds on which channels they would like to receive funds in a circular way.
+Both querries will allow the nodes to signal that they will be willing to participate in a rebalancing operation for up to $x$ tokens.
+After the node $u$ has aquired this subset of the friend of a friend network it searches for a path from $u_i$ to $u$.
+This path will be preceeded with the first hop from $u$ to $u_i$ making it a circular payment.
+Also The amount send on this circular payment will be the highest possible value up to $x$
+
+Note that there are some rather strict choices made here.
+For example one woud not need to find the node with the channel with the maximum difference in step 3 but could introduce some randomization.
+Also nodes might want to define their health in a different way thatn comparing the local balance coefficients to their global balance coefficients.
+For example routing nodes or liquidity providers might very well want to have high values of $\beta$ on some of their channels where as they might be willing to accept low values for $\beta$ on other channels.
+In a similar way merchants will probably prefer many channels with low values of $\beta$.
+The algorithm could very well be exchanged to a version in which nodes decide their own health metric.
+
+%\begin{itemize}
+%\item Nodes can query neighbors for channels. FOAF rebalancing
+%\item Nodes will return most uneven channels (highest absolut difference from gini coefficient)
+%\item nodes will initiate for their most uneven balance (should the query include an amount?)
+%\item if nodes have a channel they want to rebalance in different directions no response is given.
+%\item before asking the entire network first ask the peer for whome one wants to rebalance (including direction. if peer doesn't want to do the next channel)
+%\item see how fast convergance
+
+%\end{itemize}
+
+\section{Experimental Setup}
+We generate synthetic graphs of various sizes and always initialize them with the full capacity on one side of the channel.
+We then conduct a simulation of the algorithm in the following way:
+\begin{enumerate}
+\item Assign $C$ as the candidate set of all nodes in the network.
+\item As long as $|C| > 0$ do the following steps.
+\item A random node from $C$ is chosen and is allowed to do one rebalancing operation to improve its network health.
+\item If the node was successfull go back to step $1$.
+\item If the node could not improve its health remove the node from $C$ and go to step $3$.
+\end{enumerate}
+
+This setup is slightly modified to answer several questions:
+
+\subsection{Well definition of the globl health measure}
+The initial setup is conducted for various networks of various sizes with the goal of measuring how the overall health of the network improves.
+We will test if the the Ginicoefficients of the nodes are distributed normally such that measuring the global health of the network as the average does actually make sense.
+These experiments are also made to see how much work it takes nodes to execute their rebalancing operations and improoving their local health.
+We shall also see if the algorithm always converges.
+
+\subsection{Onboarding phase}
+If this method becomes part of the lightning network implemntations not all nodes will update their software at the same time.
+Thus we conduct the simulation again on the same networks but only with a fraction of nodes engaging in the health improvement algorithm.
+We wish to examine how the overall health of the network depends on the participation of nodes.
+For this we will actually do a second experiment in which the rebalancing can still take place over nodes that did not participate in the algorithm.
+This can be achieved by paying regular routing fees.
+
+\subsection{Real time changes of funds allocation}
+As making a regular payment, opening or closing a channel changes the funds distribution of the network $\tau_{u_1},\dots,\tau_{u_n}$ the health improvement algorithm will be pertubed and have a different optimal solution.
+We want to see how such operations impact the health improvement algorithm and how quickly the algorithm can adjust to such changes to the allocation of funds.
+Thus with a likelihood of varying $p$ we mix Lightning Network operations like making payments as well as adding and removing channels to the simulation.
+We will test the ratio of rebalancing operations to payments on the network for the network to stay healthy and be able to fullfill payments.
+This will give us a hint how much overhead will come from the health improvement algorithm in order to be useful and if it is feasible to execute the algorithm.
+
+\section{Results}
+
+
+
+\section{Future Work}
+We want to study if the optimization problem is convex and thus the local minima is also a global minima.
+Does our algorithm always find the local / global minima?
+Concurrent payments / rebalancing operations within the simulation
+
+difference between I pay for a circular onion to get my node in perfect health vs. we do a fee free rebalancing but I must accept that other nodes might not want to rebalance the entire amount that I am suggesting.
+
+Multipath rebalancing! if thirty needs to send out maybe one channel needs 10 in and the other one 20. If it is not multipath it will need two rebalncing operations. Especially when having FOAF talking one could already split this and make several requests.
+
+Having different strategies to define local health. How does the algorithm generalize? 
+
+\section{Conclusion}
+The overall flow, liquidity and ability to route payments successfully on the first attempt is higher in well balanced networks. 
+The results suggest that nodes have an interest to increase their own health and to take part in rebalancing operations of other nodes if that benefits the own health of the node.
+As balances of channels in the frien of a friend network can easily be probed it seems plausible in privacy aware payment channel networks to include a communication protocol with which a node signal their partners that it wants to rebalance a certain channel with a certain amount and ask them which of their channels are interesting for supporting such a rebalance operation.
+We suggest that payment channel networks introduce a mechanism of fee free rebalancing if the rebalancing operation if every hop along the circle believes that the rebalancing operation is benefitial to them. 
+
+
+\bibliography{lightningNetworkHealth}
+\bibliographystyle{plain}
+
+\end {document}
