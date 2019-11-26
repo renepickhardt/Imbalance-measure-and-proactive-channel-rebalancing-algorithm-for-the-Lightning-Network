@@ -18,6 +18,6 @@ for item in items:
 f = open("network","w")
 for item in take:
     f.write("{}\t{}\t{}\n".format(item[0],item[1],random.randint(1000,10000)))
-f.write("\n")
+#f.write("\n")
 
     
