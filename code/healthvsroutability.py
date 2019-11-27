@@ -46,12 +46,19 @@ f = open("out/1574847007.523627_routability", "r")
 flag = True
 fails = []
 mins = []
+values = []
 for line in f:
+    values = [int(x) for x in line.split("\t")]
     if flag:
         flag = False
         print("ignore first line")
+        plt.hist(values, bins=50)
+        plt.title(
+            "Distribution of routable payment amounts in the unbalanced network")
+        plt.ylabel("Frequency")
+        plt.xlabel("routable payment amount")
+        plt.show()
         continue
-    values = [int(x) for x in line.split("\t")]
     numfails = 0
     min_amt = sys.maxsize
     for x in values:
@@ -61,6 +68,14 @@ for line in f:
             min_amt = x
     fails.append(float(numfails) / float(len(values)))
     mins.append(min_amt)
+
+plt.hist(values, bins=50)
+plt.title(
+    "Distribution of routable payment amounts in the balanced network")
+plt.ylabel("Frequency")
+plt.xlabel("routable payment amount")
+plt.show()
+
 
 plt.scatter(healths, fails)
 plt.grid()

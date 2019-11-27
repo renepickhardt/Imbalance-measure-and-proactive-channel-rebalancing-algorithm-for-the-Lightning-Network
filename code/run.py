@@ -230,13 +230,15 @@ class Network:
 n = Network()
 n.load_network()
 # n.G.add_edge("B","A",capacity=100,balance=0)
+nodes = list(n.G)
+nodes_set = set(nodes)
+print(len(nodes), "nodes and", n.G.number_of_edges()/2, "edges")
+# exit()
 
 run = "out/" + str(time.time())
 raw_data = open(run+"_raw", "w")
 routability_data = open(run+"_routability", "w")
 
-nodes = list(n.G)
-nodes_set = set(nodes)
 
 ginis = [n.gini(n.compute_betas(node)) for node in nodes]
 
@@ -271,7 +273,7 @@ for step in range(25000):
     median, mean, amts = n.routability()
     print(median, mean, step, rebalance_amt, node,  health)
     raw_data.write("{}\t{}\t{}\t{}\n".format(node, health, median, mean))
-    routability_data.write("\t".join(str(amt) for amt in amts)+"\n")
+    #routability_data.write("\t".join(str(amt) for amt in amts)+"\n")
     health_ts.append(health)
 routability_data.flush()
 routability_data.close()
@@ -287,6 +289,7 @@ for node in n.G:
 raw_data.write("\n")
 ginis = []
 nodes = list(n.G)
+
 for node in nodes:
     gini = n.gini(n.compute_betas(node))
     ginis.append(gini)
