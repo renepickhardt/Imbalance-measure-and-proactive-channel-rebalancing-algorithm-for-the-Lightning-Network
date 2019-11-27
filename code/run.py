@@ -11,6 +11,7 @@ capacity = "capacity"
 
 class Network:
     G = None
+    shortest_paths = []
 
     def __init__(self):
         self.G = nx.DiGraph()
@@ -24,6 +25,26 @@ class Network:
                     to_add.append((v, u, c))
         for v, u, c in to_add:
             self.G.add_edge(v, u, capacity=c, balance=0)
+
+    def __all_pair_shortest_paths(self):
+        res = nx.all_pairs_shortest_path(self.G)
+        m = 0
+        d = {}
+        self.shortest_paths = []
+        for p in res:
+            for k, v in p[1].items():
+                l = len(v)
+                if l in d:
+                    d[l] += 1
+                else:
+                    d[l] = 1
+                if l > m:
+                    m = l
+                if l == 1:
+                    continue
+                self.shortest_paths.append(v)
+        print("diameter", m)
+        print("distribution of shortest path length", d)
 
     def __beta(self, u, v):
         return float(self.G[u][v][balance])/float(self.G[u][v][capacity])
@@ -83,6 +104,38 @@ class Network:
 
         return amt
 
+    def __compute_forward_amt(self, circle):
+        amt = sys.maxsize
+        # if len(circle) < 3:
+        #    return 0
+        # print(circle)
+        for i in range(len(circle)-1):
+            f = circle[i]
+            t = circle[i+1]
+            tmp = self.G[f][t][balance]
+        #    print(f, t, tmp)
+            if tmp < amt:
+                amt = tmp
+        # print(amt)
+        """if amt == 0:
+            for n in circle:
+                self.make_node_healthier(n)
+
+            amt = sys.maxsize
+            if len(circle) < 3:
+                return 0
+            print(circle)
+            for i in range(len(circle)-1):
+                f = circle[i]
+                t = circle[i+1]
+                tmp = self.G[f][t][balance]
+                print(f, t, tmp)
+                if tmp < amt:
+                    amt = tmp
+                print(amt)
+            exit()"""
+        return amt
+
     def load_network(self):
         f = open("network", "r")
         for line in f:
@@ -95,6 +148,7 @@ class Network:
                 continue
             self.G.add_edge(f, t, capacity=int(c), balance=int(c))
         self.__initialize_balances()
+        self.__all_pair_shortest_paths()
 
     def compute_gamma(self, node):
         tc = 0
@@ -121,6 +175,18 @@ class Network:
 
     def total_health(self):
         return np.mean([self.gini(self.compute_betas(n)) for n in self.G])
+
+    def routability(self):
+        amts = []
+        for path in self.shortest_paths:
+            amt = self.__compute_forward_amt(path)
+            # if amt < 1:
+            #    amt = 0
+            amts.append(amt)
+        # plt.hist(amts)
+        # plt.show()
+        # print(amts)
+        return np.median(amts), np.mean(amts), amts
 
     def make_node_healthier(self, node):
         gamma = self.compute_gamma(node)
@@ -167,7 +233,7 @@ n.load_network()
 
 run = "out/" + str(time.time())
 raw_data = open(run+"_raw", "w")
-
+routability_data = open(run+"_routability", "w")
 
 nodes = list(n.G)
 nodes_set = set(nodes)
@@ -185,6 +251,8 @@ plt.close()
 
 
 health = n.total_health()
+median, mean, amts = n.routability()
+routability_data.write("\t".join(str(amt) for amt in amts)+"\n")
 health_ts = [health]
 for step in range(25000):
     if len(nodes) == 0:
@@ -200,10 +268,13 @@ for step in range(25000):
         nodes_set = set(nodes)
 
     health = n.total_health()
-    print(step, rebalance_amt, node,  health)
-    raw_data.write("{}\t{}\n".format(node, health))
+    median, mean, amts = n.routability()
+    print(median, mean, step, rebalance_amt, node,  health)
+    raw_data.write("{}\t{}\t{}\t{}\n".format(node, health, median, mean))
+    routability_data.write("\t".join(str(amt) for amt in amts)+"\n")
     health_ts.append(health)
-
+routability_data.flush()
+routability_data.close()
 print(step, "steps used for rebalancing")
 
 raw_data.write("\n")
