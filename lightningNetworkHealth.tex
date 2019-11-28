@@ -63,20 +63,23 @@ Every node can be assigned its set of channels which we encode with the neighbor
 Similarly if we want to denote the set of neighboring nodes we use the function $n_n : N \longrightarrow 2^{N}$.
 Natually the cpacity of every channel $e=(u,v)$ is privately split into the local balances with the balance function $b: E\times N\longrightarrow\mathbb{N}$ such that $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$.
 
-We define the local balance coefficient for a participant $e_u$ of a channel as  $\beta_u = \frac{b(e_u)}{c(e)}$.
+We define the channel balance coefficient for $u$ on the channel $e=(u,v)$ as  $\zeta_{(u,v)} = \frac{b(e_u)}{c(e)}$.
 This is just the relative amount of funds that participant $u$ has in the channel $e$.
-Note since $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$ we also have $\beta_u + \beta_v=1$
+Note since $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$ we also have $\zeta_{(u,v)} + \zeta_{(v,u)}=1$
 
 To make the following formulas easier to read we set $U:=n_n(u)$ the set of channel partners of participant $u$.
 The total funds of a participant $u$ are denoted as $\tau_u:=\displaystyle{\sum_{e\in U}b(e_u)}$.
-similarly the total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(u)}$.
-Using the last two definitions we can define the global balance coefficient for a participant $u$ as $\gamma_u = \frac{\tau_u}{\kappa_u}$.
+The values of $\tau_u$ will be constant while the balance function $b$ is pertubed.
+Similarly the total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(u)}$.
+Using the last two definitions we can define the node balance coefficient for a participant $u$ as $\nu_u = \frac{\tau_u}{\kappa_u}$.
 
-We measure the health of a node $u$ by comparing its local balances coefficients with its global balance coefficient.
-Our model assumption is that $u$ is considered more healthy the smaller the difference of those coefficients is.
-The statistically sound way of conducting this comparison is to compute the Gini coefficient $G_u$ of the distribution of $u$'s local channel balances $\beta_{u_1},...,\beta_{u_d}$ where $d=|U|$ is the node degree of $u$.
-
-$G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \beta_i - \beta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \beta_j}}$
+We define a node $u$ healthy if its channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ have the same value.
+This means that the relative distribution of a nodes funds across all its channels is the same.
+Consequently we consier a node unhealthy if it local channel balance coefficients are unequal.
+Statistically inequality of a distribution is meassured with the Gini coefficient.
+Thus for a node $u$ with channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ we define $G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \zeta_j}}$
+If $G_u = 0$ this means that the channel balance coefficents are equal which we considered as health.
+In contrast if $G_u = 1$ the channel balance coefficients are distributed in the most unequal way meaning the node is unhealthy. 
 
 It is worthwhile to mention and easy to see that if and only if the Ginicoefficient of the local channel balance coefficients takes the value $0$ the local channel balance coefficents are all the same and have exactly the value as the global channel balance coefficient. \footnote{formaly proove this?}
 
@@ -93,8 +96,8 @@ The constraint to this optimization problem is to fix the total funds $\tau_u$ f
  \label{fig:evenUnbalanced}
 \end{figure}
 In Figure \ref{fig:evenUnbalanced} you can see an a small network consisting of $3$ nodes in which the balance are distributed unevenly.
-The global balance coefficients for every node are $\gamma_u=0.5$.
-The $\beta$ values for each node are $0$ for the channel in which the node owns no funds and $1$ for the channel in which the node owns all the funds.
+The global balance coefficients for every node are $\nu_u=0.5$.
+The $\zeta$ values for each node are $0$ for the channel in which the node owns no funds and $1$ for the channel in which the node owns all the funds.
 This leads to a local health for every node of $0.5$ and a global health of the network of $0.5$.
 \begin{figure}
  \centering
@@ -104,7 +107,7 @@ This leads to a local health for every node of $0.5$ and a global health of the 
 \end{figure}
 Now in Figure \ref{fig:evenBalanced} we see the balanced view of this network.
 The total funds $\tau_u$ stayed constant as it is the constrain of the optimization problem.
-However since the funds have been rebalanced the local balance coefficients $\beta$ of every channel now take the value of $0.5$ leading to a local health coefficient $G_u=0$ for every node $u\in N$.
+However since the funds have been rebalanced the local balance coefficients $\zeta$ of every channel now take the value of $0.5$ leading to a local health coefficient $G_u=0$ for every node $u\in N$.
 This in turn leads to a perfectly health network with $H=0$.
 
 Considering multi path payments in both cases of the network every node was able to pay the full funds they owned to every other participant.
@@ -132,10 +135,10 @@ While it seems that our optimization problem seems to be convex and yields a cle
 Thus optimization techniques that solve the optimization problem globally and distribute the solution amoung participants are of little use.
 We thus focus on an agent based strategy that every participant can execute to improove its own health.
 \begin{enumerate}
-\item A node $u$ will compute its global balance coeffient $\gamma_u$.
-\item $u$ will then compute the local balance coefficients $\beta_{u_1},\dots,\beta_{u_d}$ for its $d$ channels.
-\item The node will select the channel $e=(u,u_i)$ with the highes difference between its local and global channel balance coefficient i.e.: $i = \displaystyle{\argmax_{i=1}^d\{\beta_{u_i} - \gamma_u\}}$. Note that we do not need to take absolute values as $u$ will only b able to initiate a rebalancing operation by sending money which means decreasing its value of $\beta_{u_i}$.
-\item Now the node searches for a circular payment along this channel. The amount of that payment should decrese the value of $\beta_{u_i}$ to that of $\gamma_u$ and can be computed as $x = c(e)\cdot (\beta_{u_i}-\gamma_u)$. Also the end of the circle should be a channel for which the local balance coefficient is smaller than the global balance coefficient. 
+\item A node $u$ will compute its global balance coeffient $\nu_u$.
+\item $u$ will then compute the local balance coefficients $\zeta_{u_1},\dots,\zeta_{u_d}$ for its $d$ channels.
+\item The node will select the channel $e=(u,u_i)$ with the highes difference between its local and global channel balance coefficient i.e.: $i = \displaystyle{\argmax_{i=1}^d\{\zeta_{u_i} - \nu_u\}}$. Note that we do not need to take absolute values as $u$ will only b able to initiate a rebalancing operation by sending money which means decreasing its value of $\zeta_{u_i}$.
+\item Now the node searches for a circular payment along this channel. The amount of that payment should decrese the value of $\zeta_{u_i}$ to that of $\nu_u$ and can be computed as $x = c(e)\cdot (\zeta_{u_i}-\nu_u)$. Also the end of the circle should be a channel for which the local balance coefficient is smaller than the global balance coefficient. 
  \item Repeat all steps as long as the local balance coefficients are still not even.
 \end{enumerate}
 
@@ -159,8 +162,8 @@ Also The amount send on this circular payment will be the highest possible value
 Note that there are some rather strict choices made here.
 For example one woud not need to find the node with the channel with the maximum difference in step 3 but could introduce some randomization.
 Also nodes might want to define their health in a different way thatn comparing the local balance coefficients to their global balance coefficients.
-For example routing nodes or liquidity providers might very well want to have high values of $\beta$ on some of their channels where as they might be willing to accept low values for $\beta$ on other channels.
-In a similar way merchants will probably prefer many channels with low values of $\beta$.
+For example routing nodes or liquidity providers might very well want to have high values of $\zeta$ on some of their channels where as they might be willing to accept low values for $\zeta$ on other channels.
+In a similar way merchants will probably prefer many channels with low values of $\zeta$.
 The algorithm could very well be exchanged to a version in which nodes decide their own health metric.
 
 %\begin{itemize}
@@ -271,7 +274,7 @@ To demonstrate that the median actually makes sense we depict the distribution o
 
 
 Finally we tested if it actually makes sense from a statistical point of view to compute the health as the average of the local health coeffcients.
-To test that we tested if the local health coeffients $\gamma_u$ for all $u \in N$ follow a normal distribution which was sucessfully verfied with the D'Agostino normallity test \cite{d1971omnibus}.
+To test that we tested if the local health coeffients $\nu_u$ for all $u \in N$ follow a normal distribution which was sucessfully verfied with the D'Agostino normallity test \cite{d1971omnibus}.
 This test achieved a p-value of $0.027$ on the balanced network.
 One can actually see in figure \ref{fig:giniStart} and \ref{fig:giniEnd} how the distribution of local health coefficients looked before and after rebalancing the network. We can mainly see that on average as measured by the global health coefficient the mean of the distribution is being decreased as it should be.
 \begin{figure}
@@ -304,7 +307,15 @@ Multipath rebalancing! if thirty needs to send out maybe one channel needs 10 in
 
 Having different strategies to define local health. How does the algorithm generalize? 
 
-\section{Conclusion}
+Note while we empirically verified that the health measure increases the overall ability of network participants to route payments on random paths the health measure has some edge cases in which it is breaking with the intuitive semantics a person would have.
+Consider for example a node that opens $d$ channels and has all the funds on its side.
+In that case the local channel coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ would all take the value of $1$ resulting in $G_0 = 0$ meaning this node is in perfect health.
+However from a network perspective this node could node forward any payments and cannot even be rebalanced unless the overall topology changes by either $u$ making a payment or another node opening a channel with $u$.
+Thus a future work in the direction of autopilots and channel management might include to not only optimize ones node for a low value of $G_u$ but also to optimize towards $\nu_u = 0.5$.
+
+
+\section{Conclusion and Discussion}
+
 The overall flow, liquidity and ability to route payments successfully on the first attempt is higher in well balanced networks. 
 The results suggest that nodes have an interest to increase their own health and to take part in rebalancing operations of other nodes if that benefits the own health of the node.
 As balances of channels in the frien of a friend network can easily be probed it seems plausible in privacy aware payment channel networks to include a communication protocol with which a node signal their partners that it wants to rebalance a certain channel with a certain amount and ask them which of their channels are interesting for supporting such a rebalance operation.
