@@ -49,7 +49,15 @@ If the channel capacity was always perfectly split in half as the local balance 
 It is trivial to see that neither initially nor after conducting payments the funds are distributed evenly among the participants so that we cannot have the goal to design an algorithm that helps to re-balance the funds fully evenly without asking participants to give money to other participants for fee which obviously is economically infeasible. 
 
 We introduce a local and a global health measure for privacy aware payment channel networks which nodes can work towards achieving.
-\section{Related Work}
+
+The remainder of this paper is organized as follows in section \ref{sec:relatedWork} we give a short overview of related work in this field.
+We then introduce the notation and definition of our health score in section \ref{sec:formalization}.
+After we show a small example of our definitions in section \ref{sec:example} we formulate the optimization problem to improve the health and propose an algorithm in \ref{sec:Algorithm}.
+To improve the computational overhead of the algorithm we propose a few changes to the lightning network protocol in section \ref{sec:lnchanges}.
+In section \ref{sec:setup} we introduce the experimental setup and the data set that we used.
+After showing our empirical results in \ref{sec:results} we discuss the results and propose some future work in the last two sections.
+
+\section{Related Work}\label{sec:relatedWork}
 While the Lightning Network White paper \cite{poon2016bitcoin} does not discuss path finding and states routing as an easy problem it is generally recognized that pathfinding on the lightning network is a difficult problem \cite{piatkivskyi2018split}, \cite{prihodko2016flare}, \cite{bagaria2019boomerang}, \cite{pickhardt2019pathfinding}, \cite{grunspan2018ant}, \cite{sivaraman2018routing}.
 There is already research being conducted in the field of rebalancing channels \cite{khalil2017revive} which was more about the cryptographic protocols used to make sure that participants can enforcethe rebalancing that was agreed upon.
 There are rebalancing operations for c-lightning\footnote{\url{https://github.com/lightningd/plugins/tree/master/rebalance}} and for lnd\footnote{\url{https://github.com/bitromortac/lndmanage}}.
@@ -58,7 +66,7 @@ In particular the idea of Just in time rebalancing while fulfilling routing requ
 \textbf{TODO:} Add statistical papers of the lightning network. Payment reliability and path finding methods (similar to PhD Proposal)
 
 
-\section{Formalization and Assumptions}
+\section{Formalization and Assumptions}\label{sec:formalization}
 Let $G=(N,E,c)$ be a privacy aware payment channel network with a finit set of nodes.
 The payment channels are the edges in the network such that $E\subset N\times N$.
 Additionally we have a publically known capacity function $c: E\longrightarrow \mathbb{N}$ that assignes a cpacity to every edge of the network.
@@ -99,7 +107,7 @@ As we lacking knowledge we cannot aply standard optimization techniques like gra
 We suggest to use an agent based heuristic in which every participant executes some operations to improve its own help which others support if it also improves their health.
 Before we describe our proposed algorithm in \ref{sec:Algorithm} we will now see a small example of our terminology. 
 
-\subsection{Example}
+\subsection{Example}\label{sec:example}
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{img/evenUnbalanced.png}
@@ -160,7 +168,7 @@ Obviously finding a circular rebalancing path is tricky as the balances of the n
 Also rebalancing might worsen the health of another node along the path in in that way not actually contributing to improve the global health.
 The biggest drawback is that in the current implementation of the Lightning Network such a circular payment will cost the initator some routing fee which economically deincentivizes the node to improve its health even though our evaluation suggest that it will be benefitial for the network.
 
-\subsubsection{Adoptions to the communication protocol}
+\subsubsection{Adoptions to the communication protocol}\label{sec:lnchanges}
 In order to get rid of these problems we suggest to extend the communication protocol between channel partners and to update the algorithm.
 .We take the idea of cost free rebalancing in the friend of a friend network as it was first proposed in the context of JIT-Routing \cite{pickhardt2019jit}.
 In order to calculate a circular path node $u$ will query $v$ for the channels on which $v$ would be willing to forward the amount $a$ in a circular way.
@@ -178,42 +186,32 @@ While we suggest that channel partners share some information with each other th
 First of all nodes can probe for rebalancing circles that are benifitial for itself.
 Second s nodes on the way would only fulfill the fee free rebalncing request if it also improves their health this algorithm could work without actively sharing information in the friend of a friend network.
 
-\section{Experimental Setup}
-We generate synthetic graphs of various sizes and always initialize them with the full capacity on one side of the channel.
+\section{Experimental Setup}\label{sec:setup}
 We then conduct a simulation of the algorithm in the following way:
 \begin{enumerate}
 \item Assign $C$ as the candidate set of all nodes in the network.
 \item As long as $|C| > 0$ do the following steps.
-\item A random node from $C$ is chosen and is allowed to do one rebalancing operation to improve its network health.
+\item A random node from $C$ is chosen and is allowed to do one rebalancing operation to improve its network health executing the steps discussed in section \ref{sec:Algorithm}.
 \item If the node was successfull go back to step $1$.
 \item If the node could not improve its health remove the node from $C$ and go to step $3$.
 \end{enumerate}
+After each step we track all channel balance coefficients, local helth of nodes and the health of the network.
 
-This setup is slightly modified to answer several questions:
-
-\subsection{Well definition of the globl health measure}
-The initial setup is conducted for various networks of various sizes with the goal of measuring how the overall health of the network improves.
-We will test if the the Ginicoefficients of the nodes are distributed normally such that measuring the global health of the network as the average does actually make sense.
-These experiments are also made to see how much work it takes nodes to execute their rebalancing operations and improoving their local health.
-We shall also see if the algorithm always converges.
-
-\subsection{Onboarding phase}
-If this method becomes part of the lightning network implemntations not all nodes will update their software at the same time.
-Thus we conduct the simulation again on the same networks but only with a fraction of nodes engaging in the health improvement algorithm.
-We wish to examine how the overall health of the network depends on the participation of nodes.
-For this we will actually do a second experiment in which the rebalancing can still take place over nodes that did not participate in the algorithm.
-This can be achieved by paying regular routing fees.
-
-\subsection{Real time changes of funds allocation}
-As making a regular payment, opening or closing a channel changes the funds distribution of the network $\tau_{u_1},\dots,\tau_{u_n}$ the health improvement algorithm will be pertubed and have a different optimal solution.
-We want to see how such operations impact the health improvement algorithm and how quickly the algorithm can adjust to such changes to the allocation of funds.
-Thus with a likelihood of varying $p$ we mix Lightning Network operations like making payments as well as adding and removing channels to the simulation.
-We will test the ratio of rebalancing operations to payments on the network for the network to stay healthy and be able to fullfill payments.
-This will give us a hint how much overhead will come from the health improvement algorithm in order to be useful and if it is feasible to execute the algorithm.
+Comuting the rebalancing circles is the most expensive operation as a shortest path problem needs to be solved.
+If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a node as the shortest paths only need to be computed in a subset of the the friend of a friend network which is usually small enough to have no runtime issues.
+Also in a real payment channel network this computation would only have to be conducted if the distribution of channel balance coefficents becomes too uneven which is cheaply monitored after every payment or routing attemtp.
+However in the simulation the path finding operations add up so that we had to limit ourselves to rather small test networks.
+We conducted our experiments on 3 graphs.
+First a random network with $101$ nodes and $1788$ edges.
+In order to have a larger diameter we did the experiments also on a random network with $1000$ nodes and $FILLOUT$ edges.
+The capacity of nodes in these random networks are assigned a random value between $1000$ and $10000$ drawn from a uniform distribution.
+Both random networks used the Erdos Renyi random network generator.
+Finally to make it more realistic we conducted the experiment on the oldest existing lightning network channels to have a realistic network of $FILLOUT$ nodes and $FILLOUT$ edges.
+In all three networks we assumed an initial distribution of the balances as the total capacity on one side of the channel.
 
 
 % ==========================================================
-\section{Results}
+\section{Results}\label{sec:results}
 
 \begin{figure}
  \centering
@@ -329,6 +327,22 @@ In section we have mentioned that besides the communication protocol to share in
 Obviously the onions could not be reused as a node might steal routing fees and hide them as a rebalancing request.
 This paper did not discuss the crypotgraphic protocols necessary to ensure that a proovably fee free rebalancing operation can be executed.
 While approaches for blockchains with more expressive scripting languages exist \cite{khalil2017revive} we leave it as a future work to provide a cryptographic protocol to be able to fulfill these requests in bitcoin.
+
+
+\subsection{Onboarding phase}
+If this method becomes part of the lightning network implemntations not all nodes will update their software at the same time.
+Thus we conduct the simulation again on the same networks but only with a fraction of nodes engaging in the health improvement algorithm.
+We wish to examine how the overall health of the network depends on the participation of nodes.
+For this we will actually do a second experiment in which the rebalancing can still take place over nodes that did not participate in the algorithm.
+This can be achieved by paying regular routing fees.
+
+\subsection{Real time changes of funds allocation}
+As making a regular payment, opening or closing a channel changes the funds distribution of the network $\tau_{u_1},\dots,\tau_{u_n}$ the health improvement algorithm will be pertubed and have a different optimal solution.
+We want to see how such operations impact the health improvement algorithm and how quickly the algorithm can adjust to such changes to the allocation of funds.
+Thus with a likelihood of varying $p$ we mix Lightning Network operations like making payments as well as adding and removing channels to the simulation.
+We will test the ratio of rebalancing operations to payments on the network for the network to stay healthy and be able to fullfill payments.
+This will give us a hint how much overhead will come from the health improvement algorithm in order to be useful and if it is feasible to execute the algorithm.
+
 
 \section{Conclusion and Discussion}
 
