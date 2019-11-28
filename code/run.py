@@ -137,7 +137,7 @@ class Network:
         return amt
 
     def load_network(self):
-        f = open("network", "r")
+        f = open("lightning_network", "r")
         for line in f:
             if line[-1] == '\n':
                 line = line[:-1]
@@ -159,6 +159,9 @@ class Network:
                 tb += self.G[node][n][balance]
         except:
             print(node, self.G)
+        if tb == 0:
+            print(node, list(self.G[node]))
+            exit()
         return float(tb)/float(tc)
 
     def beta(self, u, v):
@@ -170,7 +173,9 @@ class Network:
     def gini(self, x):
         # FIXME: replace with a more efficient implementation
         mean_absolute_differences = np.abs(np.subtract.outer(x, x)).mean()
+        # print(x)
         relative_absolute_mean = mean_absolute_differences/np.mean(x)
+        # print(relative_absolute_mean)
         return 0.5 * relative_absolute_mean
 
     def total_health(self):
@@ -190,6 +195,8 @@ class Network:
 
     def make_node_healthier(self, node):
         gamma = self.compute_gamma(node)
+        # print(gamma)
+        # exit()
         candidate = None
         max_diff = 0
         for n in self.G[node]:
@@ -235,7 +242,7 @@ nodes_set = set(nodes)
 print(len(nodes), "nodes and", n.G.number_of_edges()/2, "edges")
 # exit()
 
-run = "out/" + str(time.time())
+run = "out/ln"  # + str(time.time())
 raw_data = open(run+"_raw", "w")
 routability_data = open(run+"_routability", "w")
 
