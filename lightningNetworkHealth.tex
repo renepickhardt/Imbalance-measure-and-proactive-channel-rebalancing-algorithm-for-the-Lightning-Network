@@ -237,12 +237,12 @@ We can therefore assume that the local minimum might be close to global minimum 
 \end{figure}
 
 In \cref{fig:healthVsFailurerate} we compare our defined health score with the failure rate of payments.
-We can clearly see that better (lower) health scores yield a lower failure rate for payments.
-The failure rate is measured by attempting a payment between all pairs of nodes and count the relative amount of payments that cannot be routed on the first selected path from the payment channel network.
-We calculated the failure rate and the health score after every simulation step and plotted the points as a scatter plot.
-This result is a first indicator that the defined health score is indeed semantically correct and well chosen. 
+We can see that better (lower) health scores yield a lower failure rate for payments.
+The failure rate is measured by attempting a payment between all pairs of nodes and counting the relative amount of payments that cannot be routed on the first selected path from the payment channel network.
+We calculate the failure rate and the health score after every simulation step and plot the points as a scatter plot.
+This result confirms the dependency of the payment failure and the worse health indicator. It is the first experiment that indicates that the defined health score is semantically correct and well chosen. 
 
-The goal of the second experiment was to check if the overall amounts that can be routed increase with better (lower) health scores.
+The goal of the second experiment is to check if the overall amounts that can be routed increase with better (lower) health scores.
 
 \begin{figure}
  \centering
@@ -258,9 +258,10 @@ We then look at the amount that could actually be forwarded through each path.
 Finally we take the median of those amounts.
 This means that at least $50\%$ of payment pairs are able to forward this amount.
 The higher this amount is the higher payments are supported by the network.
-We see a nice negative correlation between the health score and and the median routable payment amount.
-This suggests that a more healthy network is statistically able to route higher payment amounts on the first try.
-This is particularly nice as privacy aware payment channel networks use source based onion routing and technically have to guess a path. If those paths out of the box provide a low failure rate with high payment amounts the user experience will be high.
+We see a nice negative correlation between the health score and the median routable payment amount.
+This suggests that a healthier network is statistically able to route higher payment amounts on the first try.
+This is particularly important as privacy aware payment channel networks use source based onion routing and technically have to guess a path. When those initially guessed paths provide a low failure rate with high payment amounts there are considerable benefits for the overall functioning of the payment network. 
+The user experience is improved, the payment delays are lowered, and the amount of messaging and coordination is minimised. 
 
 \begin{figure}
  \centering
@@ -272,26 +273,27 @@ This is particularly nice as privacy aware payment channel networks use source b
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{code/results/routabilityTest/paymentamtBalanced.png}
- \caption{The final distribution of maximum payment amounts that are possible to be paid on the first routing attempt between all pairs of nodes in the network after the health imrpoving algorithm has converged into a local minimum.}
+ \caption{The final distribution of maximum payment amounts that are possible to be paid on the first routing attempt between all pairs of nodes in the network after the health improving algorithm has converged into a local minimum.}
  \label{fig:paymentBalanced}
 \end{figure}
-To demonstrate that the median actually makes sense we depict the distribution of possible payment amounts between all pairs of nodes on the unbalanced network which we used as an input for the algorithm in figure \ref{fig:paymentUnbalanced} and also the distribution of possibl payment amounts on the balanced network after the algorithm has been executed successfully in figure\ref{fig:paymentBalanced}.
 
+To demonstrate that the median actually makes sense we depict the distribution of possible payment amounts between all pairs of nodes on the unbalanced network which we used as an input for the algorithm in \cref{fig:paymentUnbalanced} and also the distribution of possible. payment amounts on the balanced network after the algorithm has been executed successfully in \cref{fig:paymentBalanced}.
 
-Finally we tested if it actually makes sense from a statistical point of view to compute the health as the average of the local health coeffcients.
-To test that we tested if the local health coeffients $\nu_u$ for all $u \in N$ follow a normal distribution which was sucessfully verfied with the D'Agostino normallity test \cite{d1971omnibus}.
+Finally, we have tested, from a statistical point of view, a validity of computing the health as the average of the local health coefficients.
+To test that, we verified if the local health coefficients $\nu_u$ for all $u \in N$ follow a normal distribution. This has been successfully confirmed with the D'Agostino normallity test~ß\cite{d1971omnibus}.
 This test achieved a p-value of $0.027$ on the balanced network.
-One can actually see in figure \ref{fig:giniStart} and \ref{fig:giniEnd} how the distribution of local health coefficients looked before and after rebalancing the network. We can mainly see that on average as measured by the global health coefficient the mean of the distribution is being decreased as it should be.
+One can see in \cref{fig:giniStart} and \cref{fig:giniEnd} how the distribution of local health coefficients looks before and after rebalancing the network. We can see that, on average, the mean of the distribution is being decreased. This is to be expected. 
+
 \begin{figure}
  \centering
  \includegraphics[width=7cm]{code/results/routabilityTest/1574847007_ginicoefficients_start.png}
- \caption{The distribution of Ginicoefficients (local health coefficients) in the unbalanced random network before the simulation started.}
+ \caption{The distribution of Gini-coefficients (local health coefficients) in the unbalanced random network before the simulation started.}
  \label{fig:giniStart}
-\end{figure}
+\end{figure}ß
 \begin{figure}
  \centering
  \includegraphics[width=7cm]{code/results/routabilityTest/1574847007_ginicoefficients_end.png}
- \caption{Distribution of Ginicoefficients (local health coefficients) for all nodes in the random network after the health improvement algorithm successfuly executed.}
+ \caption{Distribution of Gini-coefficients (local health coefficients) for all nodes in the random network after the health improvement algorithm successfully executed.}
  \label{fig:giniEnd}
 \end{figure}
 
@@ -300,7 +302,9 @@ One can actually see in figure \ref{fig:giniStart} and \ref{fig:giniEnd} how the
 % actually it would be nice to do a kolmogorov smirnof test on distributions by comparing the L_1 norm of the CDFs
 
 
+% =======================================================================
 \section{Future Work}
+
 We want to study if the optimization problem is convex and thus the local minima is also a global minima.
 Does our algorithm always find the local / global minima?
 Find an algorithm that does produce the global minium.
