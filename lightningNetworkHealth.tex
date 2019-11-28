@@ -90,6 +90,11 @@ Again a perfect health of the network would be achieved if $H$ takes the value o
 
 Our goal is to find a balance function $b$ which minimizes $H$ given a parivacy aware payment channel network with initial distribution of funds $\tau_{u_1},\dots,\tau_{u_n}$.
 The constraint to this optimization problem that the total funds $\tau_u$ are fixed for every node $u \in N$ and any choice of the balance function $b$.
+As we are in a privacy aware payment channel network the distribution of funds $\tau_{u_1}\dots,\tau_{u_n}$ is not publically known.\footnote{While the initial distribution could be guessed from the funding transactions in the case of the Bitcoin Lightning Network for public channels this distribution will also change with the first payment that is not a rebalancing operation.}
+In the same way the initial balance function is not publically known.
+As we lacking knowledge we cannot aply standard optimization techniques like gradient descent, conjugate gradient methods or simulated annealing.
+We suggest to use an agent based heuristic in which every participant executes some operations to improve its own help which others support if it also improves their health.
+Before we describe our proposed algorithm in \ref{sec:Algorithm} we will now see a small example of our terminology. 
 
 \subsection{Example}
 \begin{figure}
@@ -133,51 +138,42 @@ For example let us look at figure \ref{fig:oddUnbalanced} we see due to the fact
 \end{figure}
 That there can also be no perfect rebalancing of funds resulting in figure \ref{fig:oddBalanced}.
 
-\subsection{Description of the algorithm}
-While it seems that our optimization problem seems to be convex and yields a clear solution in the context of privacy aware payment channel networks the balance function $b$ is not known globally or to any of the participants.
-Thus optimization techniques that solve the optimization problem globally and distribute the solution amoung participants are of little use.
-We thus focus on an agent based strategy that every participant can execute to improove its own health.
+\subsection{Description of the algorithm}\label{sec:Algorithm}
+As stated before we suggest an agent based heuristic in which participants can use the local knowledge they have in order approach the global optimization problem of finding $b$ such that the health of the network is good.
+
 \begin{enumerate}
-\item A node $u$ will compute its global balance coeffient $\nu_u$.
-\item $u$ will then compute the local balance coefficients $\zeta_{u_1},\dots,\zeta_{u_d}$ for its $d$ channels.
-\item The node will select the channel $e=(u,u_i)$ with the highes difference between its local and global channel balance coefficient i.e.: $i = \displaystyle{\argmax_{i=1}^d\{\zeta_{u_i} - \nu_u\}}$. Note that we do not need to take absolute values as $u$ will only b able to initiate a rebalancing operation by sending money which means decreasing its value of $\zeta_{u_i}$.
-\item Now the node searches for a circular payment along this channel. The amount of that payment should decrese the value of $\zeta_{u_i}$ to that of $\nu_u$ and can be computed as $x = c(e)\cdot (\zeta_{u_i}-\nu_u)$. Also the end of the circle should be a channel for which the local balance coefficient is smaller than the global balance coefficient. 
+\item A node $u$ will compute its node balance coeffient $\nu_u$.
+\item $u$ will then compute the channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ for its $d$ channels.
+\item The node will select all channels $e=(u,v_i)$ for which its channel balance coefficient is higher than its node balance coeffient i.e $C = \{(u,v_i) | \zeta_{(u,v_i)} - \nu_u\ > 0\}$.\footnote{Note that we do not need to take absolute values as $u$ will only be able to initiate a rebalancing operation by sending money which means decreasing its cannel balance coefficient of $\zeta_{(u,v_i)}$}.
+\item from the candidate set $C$ a random channel $e=(u,v)$ is selected.\footnote{We show in the experimental evaluation that always taking the channel with the biggest gain makes the heuristic stuck too quickly. The reason is that if a channel cannot be rebalanced in the next step the same channel is tried again.} 
+\item Now the node searches for a circular payment to itself along $e=(u,v)$ by choosing a path $p = [u,v,x_1,\dots,x_n,u$. The amount of that payment should decrese the value of $\zeta_{(u,v)}$ to that of $\nu_u$ and can be computed as $a = c(e)\cdot (\zeta_{(u,v)}-\nu_u)$. Also the end of the circle should be a channel $(u,x_n)$ for which the channel balance coefficient $\zeta_{(u,x_n)}$ is smaller than the node balance coefficient $\nu_u$.
+\item the node will conduct the payment if the nodes on the path $p$ agree to do this payment. 
  \item Repeat all steps as long as the local balance coefficients are still not even.
 \end{enumerate}
 
-Assuming that a circular path exist it is easy to see that the algorithm will in every step make the distribution of local balance coefficients more even.
-The reason is that we started with the most uneven one and always balance against channels that are in need for a higher local balance coefficient.
-\textbf{todo: do we need a correctness proof. There might actually be some issues with channel that have varying capacities. The proof could also work by starting from the smallest unit of account instead of having higher units of account to start with...}
+In case a circular path exist it is easy to see that the making a payment along this path will make the distribution of local balance coefficients for node $u$ more even.
+If no such circle can be found the local health is staying constant.
+Obviously finding a circular rebalancing path is tricky as the balances of the network are not known and this will again boil down to probing as it is done currently in the lightning network for regular payments..
+Also rebalancing might worsen the health of another node along the path in in that way not actually contributing to improve the global health.
+The biggest drawback is that in the current implementation of the Lightning Network such a circular payment will cost the initator some routing fee which economically deincentivizes the node to improve its health even though our evaluation suggest that it will be benefitial for the network.
 
-Obviously finding a circulary rebalancing path is tricky as the balances of the network are not known.
-Also rebalancing might worsen the health of another node along the path.
-Also in the current implementation of the Lightning Network such a circular payment will cost the initator some routing fee which economically deincentivizes the node to improve its health.
-We take the idea of cost free rebalancing in the friend of a friend network as it was first proposed in the context of JIT-Routing \cite{pickhardt2019jit}.
-Due to the anonymity of the Onion routing one can easily probe the balance of the channels of ones channel partner.
-Thus from a privacy perspective introducing a new gossip query that asks channel partners to return channels on which they want to rebalance up to $x$ tokens seems reasonable.
-In order to calculate a circular path node $u$ will query $u_i$ for the channels on which $u_i$ would be willing to forward the amount $x$ in a circular way such that $u_i$ would also improove its local health $G_{u_i}$.
-In the same way $u$ will ask the nodes though which channels it would like to receive the funds on which channels they would like to receive funds in a circular way.
+\subsubsection{Adoptions to the communication protocol}
+In order to get rid of these problems we suggest to extend the communication protocol between channel partners and to update the algorithm.
+.We take the idea of cost free rebalancing in the friend of a friend network as it was first proposed in the context of JIT-Routing \cite{pickhardt2019jit}.
+In order to calculate a circular path node $u$ will query $v$ for the channels on which $v$ would be willing to forward the amount $a$ in a circular way.
+$v$ will only return channels potentially with a lower amount than $x$ on which it  would also improove its local health $G_{v}$.
+In the same way $u$ will ask the nodes though which channels it would like to receive the funds on which channels they would like to receive funds in a circular way to improve their health.
 Both querries will allow the nodes to signal that they will be willing to participate in a rebalancing operation for up to $x$ tokens.
-After the node $u$ has aquired this subset of the friend of a friend network it searches for a path from $u_i$ to $u$.
-This path will be preceeded with the first hop from $u$ to $u_i$ making it a circular payment.
-Also The amount send on this circular payment will be the highest possible value up to $x$
+After the node $u$ has aquired this subset of channels in its friend of a friend network it searches for a path from $v$ to $u$.
+This path will be preceeded with the first hop from $u$ to $v$ making it a circular payment.
+The amount send on this circular payment will be the highest possible value up to $x$
+Nodes will drop the routing fees for this circular path as it will improve the health of each node and provie a direct benefite instead of a routing service.
 
-Note that there are some rather strict choices made here.
-For example one woud not need to find the node with the channel with the maximum difference in step 3 but could introduce some randomization.
-Also nodes might want to define their health in a different way thatn comparing the local balance coefficients to their global balance coefficients.
-For example routing nodes or liquidity providers might very well want to have high values of $\zeta$ on some of their channels where as they might be willing to accept low values for $\zeta$ on other channels.
-In a similar way merchants will probably prefer many channels with low values of $\zeta$.
-The algorithm could very well be exchanged to a version in which nodes decide their own health metric.
-
-%\begin{itemize}
-%\item Nodes can query neighbors for channels. FOAF rebalancing
-%\item Nodes will return most uneven channels (highest absolut difference from gini coefficient)
-%\item nodes will initiate for their most uneven balance (should the query include an amount?)
-%\item if nodes have a channel they want to rebalance in different directions no response is given.
-%\item before asking the entire network first ask the peer for whome one wants to rebalance (including direction. if peer doesn't want to do the next channel)
-%\item see how fast convergance
-
-%\end{itemize}
+From a privacy point of view revealing channels on which a node is willing to participate in a rebalance operation to its neighbors does not directly leak more information than could be probed anyway.
+Also nodes don't have to answer to the queries truethfully and could always intrudize some fuzziness for privacy reasons. 
+While we suggest that channel partners share some information with each other this is not necessary for the algorithm to work.
+First of all nodes can probe for rebalancing circles that are benifitial for itself.
+Second s nodes on the way would only fulfill the fee free rebalncing request if it also improves their health this algorithm could work without actively sharing information in the friend of a friend network.
 
 \section{Experimental Setup}
 We generate synthetic graphs of various sizes and always initialize them with the full capacity on one side of the channel.
@@ -322,8 +318,18 @@ In that case the local channel coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d
 However from a network perspective this node could node forward any payments and cannot even be rebalanced unless the overall topology changes by either $u$ making a payment or another node opening a channel with $u$.
 Thus a future work in the direction of autopilots and channel management might include to not only optimize ones node for a low value of $G_u$ but also to optimize towards $\nu_u = 0.5$.
 
+In section we have mentioned that besides the communication protocol to share informations about channels there needs to be a transport mechanism for fee free circular payments.
+Obviously the onions could not be reused as a node might steal routing fees and hide them as a rebalancing request.
+This paper did not discuss the crypotgraphic protocols necessary to ensure that a proovably fee free rebalancing operation can be executed.
+While approaches for blockchains with more expressive scripting languages exist \cite{khalil2017revive} we leave it as a future work to provide a cryptographic protocol to be able to fulfill these requests in bitcoin.
 
 \section{Conclusion and Discussion}
+
+Also nodes might want to define their health in a different way thatn comparing the local balance coefficients to their global balance coefficients.
+For example routing nodes or liquidity providers might very well want to have high values of $\zeta$ on some of their channels where as they might be willing to accept low values for $\zeta$ on other channels.
+In a similar way merchants will probably prefer many channels with low values of $\zeta$.
+The algorithm could very well be exchanged to a version in which nodes decide their own health metric.
+
 
 The overall flow, liquidity and ability to route payments successfully on the first attempt is higher in well balanced networks. 
 The results suggest that nodes have an interest to increase their own health and to take part in rebalancing operations of other nodes if that benefits the own health of the node.
