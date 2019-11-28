@@ -79,16 +79,18 @@ Consequently we consier a node unhealthy if it local channel balance coefficient
 Statistically inequality of a distribution is meassured with the Gini coefficient.
 Thus for a node $u$ with channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ we define $G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \zeta_j}}$
 If $G_u = 0$ this means that the channel balance coefficents are equal which we considered as health.
-In contrast if $G_u = 1$ the channel balance coefficients are distributed in the most unequal way meaning the node is unhealthy. 
+In contrast if $G_u = 1$ the channel balance coefficients are distributed in the most unequal way meaning the node is unhealthy.
 
-It is worthwhile to mention and easy to see that if and only if the Ginicoefficient of the local channel balance coefficients takes the value $0$ the local channel balance coefficents are all the same and have exactly the value as the global channel balance coefficient. \footnote{formaly proove this?}
+It is worthwhile to mention and easy to see that the Ginicoefficient of the channel balance coefficients of a node $u$ takes the value $0$ if and only if its channel balance coefficents all take the same value.
+This value will be exactly the same as the node's balance coefficient $\zeta_u$. \footnote{formaly proove this? This will be used in the rebalance algorithm to compute the rebalance amount. so maybe move? }
 
-Finally the health $H$ of the network is defined as the mean over the health of the participants that is: $H = \displaystyle{\frac{1}{|N|}\sum_{n\in N}G_n}$.
-Again a perfect health of the network would be achieved if $H$ takes the value of $0$ where as the health is poor if the value of $H$ is close to 1. 
+Finally the health of the network as $H = \displaystyle{\frac{1}{|N|}\sum_{n\in N}G_n}$ which is just the mean of the health values of all nodes in the network.
+Again a perfect health of the network would be achieved if $H$ takes the value of $0$ where as the health is poor if the value of $H$ is close to 1.
 
 Our goal is to find a balance function $b$ which minimizes $H$ given a parivacy aware payment channel network with initial distribution of funds $\tau_{u_1},\dots,\tau_{u_n}$.
-The constraint to this optimization problem is to fix the total funds $\tau_u$ for every $u \in N$.
+The constraint to this optimization problem that the total funds $\tau_u$ are fixed for every node $u \in N$ and any choice of the balance function $b$.
 
+\subsection{Example}
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{img/evenUnbalanced.png}
