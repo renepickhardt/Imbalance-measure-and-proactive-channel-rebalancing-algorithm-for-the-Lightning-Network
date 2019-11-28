@@ -8,6 +8,7 @@
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{pdfpages}
 %\usepackage{graphicx}
+\usepackage[capitalize,noabbrev]{cleveref}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
 
@@ -209,22 +210,26 @@ Thus with a likelihood of varying $p$ we mix Lightning Network operations like m
 We will test the ratio of rebalancing operations to payments on the network for the network to stay healthy and be able to fullfill payments.
 This will give us a hint how much overhead will come from the health improvement algorithm in order to be useful and if it is feasible to execute the algorithm.
 
+
+% ==========================================================
 \section{Results}
+
 \begin{figure}
  \centering
  \includegraphics[width=7cm]{code/results/routabilityTest/1574847007_figure.png}
- \caption{Health evolving with execution of the algorithm on a network with 101 nodes and 1788 edges. The edges have initially uniformly distributed capacities between $1000$ and $10000$ satoshi. Initially the full capacity is with the funder of the cannel.}
+ \caption{Health evolving with execution of the algorithm on a network with 101 nodes and 1788 edges. The edges have been initialised with uniformly distributed capacities between $1000$ and $10000$ satoshi. Ihe full capacity is initially with the funder of the channel.}
  \label{fig:healthovertime}
 \end{figure}
 
-Figure \ref{fig:healthovertime} shows that the health score of the network is indeed decreasing over time when running our simulation.
-This means that the network is indeed becoming more balanced or more healthy.
+\cref{fig:healthovertime} confirms that the health score of the network is decreasing over time when running our simulation.
+This means that the network is becoming more balanced or healthier.
 We see that most improvement is happening quite fast with a few simulation steps.
-On average each node had attempted to rebalance as often as the node has payment channels.
-This seams plausible in the sense that every channel gets rebalanced at least once.\footnote{Note that due to the collaborative behaviour of nodes a node also gets channel rebalanced in the rebalancing attempts of other nodes} 
-In particular the algorithm converges in a local minum rather quickly.
-The minimum is local as several runs did not result in the exact same balanced graph.
-However the differences where neglectable. 
+On average, each node had attempted to rebalance at least $n$ times, where $n$ is the count of the node's payment channels.
+This seams plausible in the sense that every channel gets rebalanced at least once.\footnote{Note that due to the collaborative behaviour of nodes a node also gets channel rebalanced in the rebalancing attempts of other nodes.} 
+In particular the algorithm converges in a local minimum rather quickly.
+Note, that the established minimum is a local minimum. 
+Our experimental runs resulted in states that are not identical, however, the differences were negligible. 
+We can therefore assume that the local minimum might be close to global minimum as the collected data demonstrate.
 
 \begin{figure}
  \centering
@@ -232,13 +237,14 @@ However the differences where neglectable.
  \caption{For every step of the simulation the health of the network is plotted against the probability for a random payment of the smallest possible amount to fail.}
  \label{fig:healthVsFailurerate}
 \end{figure}
-In figure \ref{fig:healthVsFailurerate} we compare our defined health score with the failure rate of payments.
+
+In \cref{fig:healthVsFailurerate} we compare our defined health score with the failure rate of payments.
 We can clearly see that better (lower) health scores yield a lower failure rate for payments.
 The failure rate is measured by attempting a payment between all pairs of nodes and count the relative amount of payments that cannot be routed on the first selected path from the payment channel network.
 We calculated the failure rate and the health score after every simulation step and plotted the points as a scatter plot.
-This result is a first indicator that the our defined health score is indeed semantically well chosen. 
+This result is a first indicator that the defined health score is indeed semantically correct and well chosen. 
 
-In a second experiment we wanted to see if the overall amounts that can be routed increase with better (lower) health scores.
+The goal of the second experiment was to check if the overall amounts that can be routed increase with better (lower) health scores.
 
 \begin{figure}
  \centering
@@ -246,7 +252,8 @@ In a second experiment we wanted to see if the overall amounts that can be route
  \caption{For every step of the simulation the health of the network is plotted against the median value of payments that can be fulfilled. Note that failed payments are part of the statistics and counted as payments which can send $0$ satoshi.}
  \label{fig:healthVsPayment}
 \end{figure}
-In figure \ref{fig:healthVsPayment} we compared the health score with the median payment amount.
+
+In \cref{fig:healthVsPayment} we compare the health score with the median payment amount.
 The median payment amount is computed as follows.
 First all pair of shortest paths are computed.
 We then look at the amount that could actually be forwarded through each path.
