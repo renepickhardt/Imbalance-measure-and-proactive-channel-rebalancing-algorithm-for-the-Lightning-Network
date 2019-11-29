@@ -41,37 +41,37 @@ optimization, convex optimization, Bitcoin, Lightning Network, payment channel n
 
 %==========================================================================
 \section{Introduction}
-Payment channel networks have been introduced to mitigate the scaling issues of blockchain technologies such as Bitcoin\cite{poon2016bitcoin}.
+Payment channel networks have been introduced in order to mitigate the scaling issues of blockchain technologies such as Bitcoin\cite{poon2016bitcoin}.
 With the help of smart contracts payment channels are created that allow the cryptographically secure transfer of value without the necessity to record the transaction to the central ledger.
 This yields new and interesting privacy properties for the participants of the network.
-In order to protect the privacy while routing a payment through several payment channels privacy aware payment cannel networks use a source based onion routing scheme like the Sphinx Mix format \cite{danezis2009sphinx}.
+In order to protect the privacy while routing a payment through several payment channels privacy aware payment channel networks use a source based onion routing scheme like the Sphinx Mix format \cite{danezis2009sphinx}.
 This prevents routing nodes from learning who paid whom.
 
 While the lightning network for example shares the capacity of public channels with its participants through its gossip protocol the local split of the capacity of the channels into the balance of its participants is not being shared with the rest of the network for two reasons:
 First this would compromise the privacy as one could collect all changes of the channel balances and reconstruct the flow of payments.
 Second propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technologies.
-The decision to use source base routing together with the unknown channel balances of the network results in a challange for finding a path of payment channels that have enough balance to be able to route an attempted payment.
-Currently this challange is met by probing paths until one is found in which each channel has enough balance to forward the payment.
+The decision to use source base routing together with the unknown channel balances of the network results in a challenge for finding a path of payment channels that have enough balance to be able to route an attempted payment.
+Currently this challenge is met by probing paths until one is found in which each channel has enough balance to forward the payment.
 It has been shown that probing for paths can take more than 3 minutes in more than $5\%$ of the attempted payments \cite{decker2019lnconf} which leads to a poor user experience.
-Imagine a grocery store in which for every 20th customer the cashregister would have to wait three minutes until the payment was received.
+Imagine a grocery store in which for every 20th customer the cash register would have to wait three minutes until the payment was received.
 
-In this paper we examine the idea of nodes proactively and collaboratively distributing their funds evenly accross their channels.
+In this paper we examine the idea of nodes proactively and collaboratively distributing their funds evenly across their channels.
 We introduce the notation of an imbalanced network.
 The imbalance is measured as the average of the imbalance scores of its nodes.
 The node's imbalance of payment channels as the gini coefficient of a node's channel balance coefficients which are the relative amount of funds a node owns in a channel in comparison to the capacity of that channel.
 In particular nodes already have all the information they need to compute their imbalance. 
-Nodes can reduce their imbalance either alone or collaboratively with the help of its channel partners by conducting circulare payments which is also known as rebalancing.
+Nodes can reduce their imbalance either alone or collaboratively with the help of its channel partners by conducting circular payments which is also known as rebalancing.
 
-We formulate an optimization problem of finding a squence of rebalance operation that minimizes the networks imbalance.
+We formulate an optimization problem of finding a sequence of rebalance operation that minimizes the network's imbalance.
 As the information necessary to solve the optimization problem is not publically known in privacy aware payment channel networks we provide a greedy privacy aware agent based heuristic for its participants to find a minimum for the problem. 
-In an empirical study we show that the greedy heuristic will lead to a $100\%$ successrate for an arbitrary payment to succeed.
+In an empirical study we show that the greedy heuristic will lead to a $100\%$ success rate for an arbitrary payment to succeed.
 We show that this is always the case if the balance of the network is good enough meaning that the imbalance score is low enough.
 In particular we see that participants do not have to follow a strategy of having as much inbound capacity as outbound capacity for this algorithm to work. 
 
-While single nodes can already execute the algorithm in currently existing payment channel networks they are economically disincentiviced to do so.
-We thus discuss the possability to introduce fee free rebalancing and for the sake of speed we suggest that nodes share with their neighbors on which local channels they would like to have inbound or outbound capacity. 
+While single nodes can already execute the algorithm in currently existing payment channel networks they are economically disincentivized to do so.
+We thus discuss the possability of introducing fee free rebalancing and for the sake of speed we suggest that nodes share with their neighbors on which local channels they would like to have inbound or outbound capacity. 
 
-The remainder of this paper is organized as follows in section \cref{sec:relatedWork} we give a short overview of related work in this field.
+The remainder of this paper is organized as follows: In section \cref{sec:relatedWork} we give a short overview of related work in this field.
 We then introduce the notation and definition of the imbalance score in section \cref{sec:formalization}.
 After we show a small example of our definitions in section \cref{sec:example} we formulate the optimization problem to reduce the imbalance and propose a greedy, agent based and collaborative algorithm in \ref{sec:Algorithm} to address the optimization problem.
 To improve the computational overhead of the algorithm we propose a few changes to the lightning network protocol in section \ref{sec:lnchanges}.
@@ -84,7 +84,7 @@ After showing our empirical results in \cref{sec:results} we discuss the results
 \section{Related Work}
 \label{sec:relatedWork}
 
-While the Lightning Network White paper~\cite{poon2016bitcoin} does not discuss path finding and states routing as an easy problem it is generally recognized that pathfinding on the lightning network is a difficult problem \cite{piatkivskyi2018split}, \cite{prihodko2016flare}, \cite{bagaria2019boomerang}, \cite{pickhardt2019pathfinding}, \cite{grunspan2018ant}, \cite{sivaraman2018routing}.
+While the Lightning Network White paper~\cite{poon2016bitcoin} does not discuss path finding and states routing as an easy problem it is generally recognized that pathfinding on the lightning network is a difficult problem \cite{piatkivskyi2018split, prihodko2016flare, bagaria2019boomerang, pickhardt2019pathfinding, grunspan2018ant, sivaraman2018routing}.
 There is already research being conducted in the field of rebalancing channels~\cite{khalil2017revive} which was more about the cryptographic protocols used to make sure that participants can enforcethe rebalancing that was agreed upon.
 There are rebalancing operations for c-lightning\footnote{\url{https://github.com/lightningd/plugins/tree/master/rebalance}} and for lnd\footnote{\url{https://github.com/bitromortac/lndmanage}}.
 In particular the idea of Just in time rebalancing while fulfilling routing requests~\cite{pickhardt2019jit} is already being implemented for c-lightning\footnote{\url{https://github.com/lightningd/plugins/pull/66}}. 
@@ -105,35 +105,35 @@ Similarly, if we want to denote the set of neighboring nodes we use the function
 Naturally, the capacity of every channel $e=(u,v)$ is privately split into the local balances with the balance function $b: E\times N\longrightarrow\mathbb{N}$ such that $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$.
 
 We define the channel balance coefficient for $u$ on the channel $e=(u,v)$ as  $\zeta_{(u,v)} = \frac{b(e_u)}{c(e)}$.
-This is just a relative amount of funds that the participant $u$ has in the channel $e$.
+This is just the relative amount of funds that the participant $u$ has in the channel $e$.
 Note since $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$ we also have $\zeta_{(u,v)} + \zeta_{(v,u)}=1$
 
-To make the following formulas easier to read let us introduce $U:=n_n(u)$ the denote a set of channel partners of participant $u$.
-The total funds of a participant $u$ are denoted as $\tau_u:=\displaystyle{\sum_{e\in U}b(e_u)}$.
+The total funds of a participant $u$ are denoted as $\tau_u:=\displaystyle{\sum_{e\in n(u)}b(e_u)}$.
 The value of $\tau_u$ is constant while the balance function $b$ can vary subject to re-allocation of funds.
-Similarly the total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(u)}$.
+To make the following formulas easier to read let us introduce $U:=n_n(u)$ the denote a set of channel partners of participant $u$.
+The total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(e)}$.
 Using the last two definitions let us define the node balance coefficient for a participant $u$ as $\nu_u = \frac{\tau_u}{\kappa_u}$.
 
 Let us call a node $u$ {\bf balanced} if its channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ have the same value.
 This means that the relative distribution of a nodes funds across all its channels is the same.
-Consequently, we consider a node {\bf imbalanced}, if it local channel balance coefficients are unequal.
+Consequently, we consider a node {\bf unbalanced}, if it local channel balance coefficients are unequal.
 Statistically, inequality of a distribution can be measured with the Gini coefficient.
 Thus, for a node $u$ with channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ we define $G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \zeta_j}}$
 If $G_u = 0$ this means that the channel balance coefficents are equal.
 In contrast, if $G_u = 1$ the channel balance coefficients are distributed in the most unequal way.
 
 Note, that the Gini coefficient of a channel balance coefficients of a node $u$ takes the value $0$ if and only if its channel balance coefficents all take the same value.
-This value will be exactly the same as the node's balance coefficient $\zeta_u$.
+This value will be exactly the same as the node's balance coefficient $\nu_u$.
 
 Finally, $G$ denotes the imbalance of the network. $G = \displaystyle{\frac{1}{|N|}\sum_{n\in N}G_n}$. Imbalance $G$ is the mean of the imbalance values of all nodes in the network.
-A perfectly balanced network would be achieved if $G$ takes the value of $0$ where as the balance is poor if the value of $G$ is close to 1.
+A perfectly balanced network would be achieved if $G$ takes the value of $0$ whereas the balance is poor if the value of $G$ is close to 1.
 
 Our goal is to find a balance function $b$ which minimizes $G$ given a privacy aware payment channel network with initial distribution of funds $\tau_{u_1},\dots,\tau_{u_n}$.
 The constraint to this optimization problem that the total funds $\tau_u$ are fixed for every node $u \in N$ and any choice of the balance function $b$.
 In a privacy aware payment channel network the distribution of funds $\tau_{u_1}\dots,\tau_{u_n}$ is not publicly known.\footnote{The initial distribution could be guessed from the funding transactions in the case of the Bitcoin Lightning Network for public channels. Note, this distribution will change with the first payment that is not a rebalancing operation.}
 In the same way the initial balance function is not publicly known.
 As we lack knowledge about the global network state, we cannot apply standard optimization techniques such as gradient descent, conjugate gradient methods or simulated annealing.
-We suggest to use an agent based heuristic in which every participant executes some operations to improve its own help which others support if it also improves their balance.
+We suggest to use an agent based heuristic in which every participant executes some operations to improve its own health which others support if it also improves their balance.
 In the following subsection we describe a short example using the newly defined terminology. In the subsequent subsection we describe our rebalancing algorithm.
 
 
@@ -166,7 +166,7 @@ This in turn leads to a perfectly balanced network with $G=0$.
 
 Considering multi path payments in both cases of the network every node was able to pay the full funds they owned to every other participant.
 If the edge $e=(A,B)$ was removed in the balanced network $A$ would still be able to pay $B$ with a path over $C$.
-This would not be possible in the imbalanced network as the funds where distributed poorly.
+This would not be possible in the unbalanced network as the funds where distributed poorly.
 It is worthwhile to mention that not every network can achieve a perfect global balance $G=0$.
 
 \begin{figure}
@@ -209,7 +209,7 @@ than its node balance coefficient, i.e.~$C = \{(u,v_i) | \zeta_{(u,v_i)} - \nu_u
 \item Repeat all steps as long as the local balance coefficients are not even enough.
 \end{enumerate}
 
-When a circular path exists, it is easy to see that the making a payment along this path will make the distribution of local balance coefficients for node $u$ more even.
+When a circular path exists, it is easy to see that making a payment along this path will make the distribution of local balance coefficients for node $u$ more even.
 If no such circular path can be found the local balance stays constant.
 Finding a circular rebalancing path might be difficult as the balances within the network are not known. 
 However, this problem is equivalent to the current problem of finding routes for regular payments.
@@ -240,7 +240,7 @@ In the same way $u$ will ask the nodes which channels it would like to receive t
 Both queries will allow the nodes to signal that they will be willing to participate in a rebalancing operation for the amount up to $x$.
 After the node $u$ has acquired this subset of channels in its friend of a friend network it searches for a path from $v$ to $u$.
 This path will be preceded with the first hop from $u$ to $v$ making it a circular payment.
-The amount send on this circular payment route will be the highest possible value up to $x$.
+The amount sent on this circular payment route will be the highest possible value up to $x$.
 It is expected that there will be no routing fees for this circular path as it will improve the balance of each node and provide a direct benefit to all of them.
 
 From a privacy point of view, revealing channels on which a node is willing to participate in a rebalance operation to its neighbors does not directly leak more information than could be known anyway because the channel state is known to channel participants.
@@ -299,7 +299,7 @@ In all three networks we assumed an initial distribution of the balances as the 
 This means that the network is becoming more balanced.
 We see that most improvement is happening quite fast with a few simulation steps.
 On average, each node had attempted to rebalance at least $n$ times, where $n$ is the count of the node's payment channels.
-This seams plausible in the sense that every channel gets rebalanced at least once.\footnote{Note that due to the collaborative behaviour of nodes a node also gets channel rebalanced in the rebalancing attempts of other nodes.} 
+This seams plausible in the sense that every channel gets rebalanced at least once.\footnote{Note, that due to the collaborative behaviour of nodes a node also gets channel rebalanced in the rebalancing attempts of other nodes.} 
 In particular the algorithm converges in a local minimum rather quickly.
 Note, that the established minimum is a local minimum. 
 Our experimental runs resulted in states that are not identical, however, the differences were negligible. 
@@ -361,7 +361,7 @@ the algorithm in \cref{fig:paymentUnbalanced} and also the distribution of possi
 The payment amounts on the balanced network after the algorithm has been executed 
 successfully in \cref{fig:paymentBalanced}.
 
-Finally, we have tested, from a statistical point of view, a validity of computing the balance as the average of the local balance coefficients.
+Finally, we have tested, from a statistical point of view, the validity of computing the balance as the average of the local balance coefficients.
 To test that, we verified if the local balance coefficients $\nu_u$ for all $u \in N$ follow a normal distribution. This has been successfully confirmed with the D'Agostino normallity test~ß\cite{d1971omnibus}.
 This test achieved a p-value of $0.027$ on the balanced network.
 One can see in \cref{fig:giniStart} and \cref{fig:giniEnd} how the distribution of local balance coefficients looks before and after rebalancing the network. We can see that, on average, the mean of the distribution is being decreased. This is to be expected. 
@@ -429,9 +429,9 @@ instead of using balance as the measure of network health.
 
 
 % ==========================================================================================
-\section{Acknolegements}
+\section{Acknowledgements}
 \label{sec:ack}
-We thank xyz...
+We thank ...
 
 
 \bibliography{lightningNetworkHealth}
