@@ -255,33 +255,38 @@ Thus, this algorithm could work without actively sharing information in the frie
 \section{Experimental Setup}
 \label{sec:setup}
 
-We then conduct a simulation of the algorithm in the following way:
+In order to validate the proposed scheme, we have run a simulation of the algorithm in the following way:
 \begin{enumerate}
 \item Assign $C$ as the candidate set of all nodes in the network.
 \item As long as $|C| > 0$ do the following steps.
-\item A random node from $C$ is chosen and is allowed to do one rebalancing operation to improve its network balance executing the steps discussed in \cref{sec:Algorithm}.
+\item A random node from $C$ is chosen and it is allowed to do one rebalancing operation to improve its balance executing the steps discussed in \cref{sec:Algorithm}.
 \item If the node was successful go back to step $1$.
 \item If the node could not improve its balance remove the node from $C$ and go to step $3$.
 \end{enumerate}
 
 After each step we track all channel balance coefficients, local balance of nodes and the balance of the network.
 
-Computing the rebalancing circles is the most expensive operation as a shortest path problem needs to be solved.
-If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a node as the shortest paths only need to be computed in a subset of the the friend of a friend network which is usually small enough to have no runtime issues.
-Also in a real payment channel network this computation would only have to be conducted if the distribution of channel balance coefficients becomes too uneven which is cheaply monitored after every payment or routing attempt.
-However in the simulation the path finding operations add up so that we had to limit ourselves to rather small test networks.
+Computing the rebalancing circles is the most expensive operation, due to the fact that it requires solving the shortest path problem.
+If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a node as the shortest paths only need to be computed in a subset of the friend of a friend network.
+This is typically small enough to have substantial performance overheads. 
+In a real payment channel network this computation would only have to be conducted 
+if the distribution of channel balance coefficients becomes too uneven,
+which is easily monitored after every payment or routing attempt without performance overhead.
+However, in the simulation the path finding operations limit the experiments to rather small test networks.
 We conducted our experiments on 3 graphs.
-First a random network with $101$ nodes and $1788$ edges.
-In order to have a larger diameter we did the experiments also on a random network with $1000$ nodes and $FILLOUT$ edges.
+First, as a proof-of-concept, a random network with $101$ nodes and $1788$ edges was used.
+Second, in order to have a larger network diameter, a random network with $1000$ nodes and $FILLOUT$ edges.
 The capacity of nodes in these random networks are assigned a random value between $1000$ and $10000$ drawn from a uniform distribution.
 Both random networks used the Erdos Renyi random network generator.
-Finally to make it more realistic we conducted the experiment on the oldest existing lightning network channels which formed a strongly connected component to have a realistic network of $816$ and $7110$ edges.
-The diameter of this network was 5 with the over a third of all pahts needing 4 or more hops.
+Finally, to make a more realistic experiment, a real-world older Bitcoin Lightning Network snapshot was used. 
+This formed a strongly connected component to have a realistic network of $816$ and $7110$ edges.
+The diameter of this network was 5 with the over a third of all paths needing 4 or more hops.
 In all three networks we assumed an initial distribution of the balances as the total capacity on one side of the channel.
 
 
 % ==========================================================
-\section{Results}\label{sec:results}
+\section{Results}
+\label{sec:results}
 
 \begin{figure}
  \centering
