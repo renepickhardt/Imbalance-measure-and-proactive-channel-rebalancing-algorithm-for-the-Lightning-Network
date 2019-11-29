@@ -233,21 +233,22 @@ We will elaborate on this scheme more in the following section.
 \subsubsection{Adoptions to the communication protocol}
 \label{sec:lnchanges}
 
-The idea of cost-free rebalancing in the friend of a friend network was first proposed in the context of JIT-Routing \cite{pickhardt2019jit}.
+The idea of cost-free rebalancing in the friend of a friend network was first proposed in the context of JIT-Routing~\cite{pickhardt2019jit}.
 In order to calculate a circular path node $u$ will query $v$ for the channels on which $v$ would be willing to forward the amount $a$ in a circular way.
-$v$ will only return channels potentially with a lower amount than $x$ on which it  would also improve its local imbalance $G_{v}$.
+$v$ will only return channels potentially with a lower amount than $x$ on which it would also improve its local imbalance $G_{v}$.
 In the same way $u$ will ask the nodes which channels it would like to receive the funds on in a circular way to improve their balance.
-Both queries will allow the nodes to signal that they will be willing to participate in a rebalancing operation for up to $x$ tokens.
+Both queries will allow the nodes to signal that they will be willing to participate in a rebalancing operation for the amount up to $x$.
 After the node $u$ has acquired this subset of channels in its friend of a friend network it searches for a path from $v$ to $u$.
 This path will be preceded with the first hop from $u$ to $v$ making it a circular payment.
-The amount send on this circular payment will be the highest possible value up to $x$
-Nodes will drop the routing fees for this circular path as it will improve the balance of each node and provide a direct benefit instead of a routing service.
+The amount send on this circular payment route will be the highest possible value up to $x$.
+It is expected that there will be no routing fees for this circular path as it will improve the balance of each node and provide a direct benefit to all of them.
 
-From a privacy point of view revealing channels on which a node is willing to participate in a rebalance operation to its neighbors does not directly leak more information than could be probed anyway.
-Also nodes don't have to answer to the queries truthfully and could always introduce some fuzziness for privacy reasons. 
+From a privacy point of view, revealing channels on which a node is willing to participate in a rebalance operation to its neighbors does not directly leak more information than could be known anyway because the channel state is known to channel participants.
+Also nodes do not have to answer to the queries truthfully and could always introduce some level of fuzziness for privacy reasons. 
 While we suggest that channel partners share some information with each other this is not necessary for the algorithm to work.
-First of all nodes can probe for rebalancing circles that are beneficial for itself.
-Second s nodes on the way would only fulfill the fee free rebalancing request if it also improves their balance this algorithm could work without actively sharing information in the friend of a friend network.
+A node can probe for rebalancing circles that are beneficial for itself, 
+and the intermediate nodes would only fulfill the fee-free rebalancing request if the operation also improves their balance. 
+Thus, this algorithm could work without actively sharing information in the friend of a friend network.
 
 
 
@@ -262,7 +263,8 @@ We then conduct a simulation of the algorithm in the following way:
 \item If the node was successful go back to step $1$.
 \item If the node could not improve its balance remove the node from $C$ and go to step $3$.
 \end{enumerate}
-After each step we track all channel balance coefficients, local helth of nodes and the balance of the network.
+
+After each step we track all channel balance coefficients, local balance of nodes and the balance of the network.
 
 Computing the rebalancing circles is the most expensive operation as a shortest path problem needs to be solved.
 If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a node as the shortest paths only need to be computed in a subset of the the friend of a friend network which is usually small enough to have no runtime issues.
