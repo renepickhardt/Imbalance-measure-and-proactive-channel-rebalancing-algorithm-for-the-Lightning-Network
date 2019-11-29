@@ -56,13 +56,14 @@ In particular the idea of Just in time rebalancing while fulfilling routing requ
 
 
 \section{Formalization and Assumptions}
+
 Let $G=(N,E,c)$ be a privacy aware payment channel network with a finit set of nodes.
 The payment channels are the edges in the network such that $E\subset N\times N$.
-Additionally we have a publically known capacity function $c: E\longrightarrow \mathbb{N}$ that assignes a cpacity to every edge of the network.
+Additionally we have a publicly known capacity function $c: E\longrightarrow \mathbb{N}$ that assigns a capacity to every edge of the network.
 For every edge $e=(u,v)$ we denote $e_u:=(e,u)$ as the first participant of the channel and $e_v=(e,v)$ as the second participant.
 Every node can be assigned its set of channels which we encode with the neighbor function $n : N \longrightarrow 2^{E}$.
-Similarly if we want to denote the set of neighboring nodes we use the function $n_n : N \longrightarrow 2^{N}$.
-Natually the cpacity of every channel $e=(u,v)$ is privately split into the local balances with the balance function $b: E\times N\longrightarrow\mathbb{N}$ such that $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$.
+Similarly, if we want to denote the set of neighboring nodes we use the function $n_n : N \longrightarrow 2^{N}$.
+Naturally, the capacity of every channel $e=(u,v)$ is privately split into the local balances with the balance function $b: E\times N\longrightarrow\mathbb{N}$ such that $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$.
 
 We define the channel balance coefficient for $u$ on the channel $e=(u,v)$ as  $\zeta_{(u,v)} = \frac{b(e_u)}{c(e)}$.
 This is just the relative amount of funds that participant $u$ has in the channel $e$.
@@ -76,7 +77,7 @@ Using the last two definitions we can define the node balance coefficient for a 
 
 We define a node $u$ healthy if its channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ have the same value.
 This means that the relative distribution of a nodes funds across all its channels is the same.
-Consequently we consier a node unhealthy if it local channel balance coefficients are unequal.
+Consequently, we consider a node unhealthy if it local channel balance coefficients are unequal.
 Statistically inequality of a distribution is meassured with the Gini coefficient.
 Thus for a node $u$ with channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ we define $G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \zeta_j}}$
 If $G_u = 0$ this means that the channel balance coefficents are equal which we considered as health.
@@ -142,7 +143,7 @@ That there can also be no perfect rebalancing of funds resulting in figure \ref{
 As stated before we suggest an agent based heuristic in which participants can use the local knowledge they have in order approach the global optimization problem of finding $b$ such that the health of the network is good.
 
 \begin{enumerate}
-\item A node $u$ will compute its node balance coeffient $\nu_u$.
+\item A node $u$ will compute its node balance coefficient $\nu_u$.
 \item $u$ will then compute the channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ for its $d$ channels.
 \item The node will select all channels $e=(u,v_i)$ for which its channel balance coefficient is higher than its node balance coeffient i.e $C = \{(u,v_i) | \zeta_{(u,v_i)} - \nu_u\ > 0\}$.\footnote{Note that we do not need to take absolute values as $u$ will only be able to initiate a rebalancing operation by sending money which means decreasing its cannel balance coefficient of $\zeta_{(u,v_i)}$}.
 \item from the candidate set $C$ a random channel $e=(u,v)$ is selected.\footnote{We show in the experimental evaluation that always taking the channel with the biggest gain makes the heuristic stuck too quickly. The reason is that if a channel cannot be rebalanced in the next step the same channel is tried again.} 
