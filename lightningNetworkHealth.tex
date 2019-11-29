@@ -390,7 +390,8 @@ One can see in \cref{fig:giniStart} and \cref{fig:giniEnd} how the distribution 
 \section{Discussion}
 \label{sec:conclusion}
 
-Our experiments support the assumption that payments along an arbitrary or randomly chosen path have a higher success rate if the network is balanced.
+Our experiments support the assumption that payments along an arbitrary or randomly chosen path have a higher success rate if the network is balanced. 
+In other words, we empirically verified that the overall ability of network participants to route payments on random paths is improved in a balanced network. 
 As privacy aware payment channel networks use source-based pathfinding without knowing the constraints of the channels along an attempted path, the likelihood of conducting a successful payment with few attempts becomes considerably higher in a balanced network.
 Our results show that nodes do not need to strive for $\nu_u = 0.5$ and perfect local balance of their channels in order to produce high success rate of random payments.
 It is sufficient for the overall network to be balanced if every node tries to optimize their channel balance coefficients be almost equal. 
@@ -407,31 +408,29 @@ We think that our suggestion for sharing channels need for a rebalancing operati
 \section{Future Work}
 \label{sec:future}
 
-We empirically verified that the overall ability of network participants to route payments on random paths is improved in a balanced network. 
-However, the health measure has some edge cases in which it is breaking with the intuitive semantics a person would have.
-Consider for example a node that opens $d$ channels and has all the funds on its side.
-In that case the local channel coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ would all take the value of $1$ resulting in $G_0 = 0$ meaning this node is in perfect health.
-From a network perspective this node can neither forward any payments can it participat in rebalancing operations.
-If the overall topology changes by either $u$ making a payment or another node opening a channel with $u$ this situation would be resolved.
-Thus a future work in the direction of autopilots and channel management might include to not only optimize ones node for a low value of $G_u$ but also to optimize towards $\nu_u = 0.5$ or to find out what node balance coefficients would be preferable for node operator with different needs.
+One of the possible extension of the work is to expand the experiments to different topologies and larger networks.
+As the simulation was already consuming a lot of computational resources we did not check if the algorithm greedy heuristic ist stable under concurrent payments and rebalancing operations taking place. 
+This would be interesting to investigate further.
 
-In a similar sense it might be interesting to study how nodes could define their local health in different ways and what would happen with the greedy algorithm if different health definitions are followed by nodes.
+The current experiments have assumed stable network topology. 
+However, every channel opening or closure, as well as every single payment, will change the local (and global) balance of the network.
+It is therefore interesting to study how it adapts if the topology changes in real time due to opening or closing channels as well as a reallocation of funds due to payments that are taking place. 
+
+Another extension of the work is to check how the heuristic performs if only a fraction of nodes participate in the sharing of rebalancing hints and fee free rebalancing protocol.
+
+The balance metric used could be used as a measure of network health in the context of random path payments. 
+However, random path payments are only one of the possible scenarios of payments flowing in a payment network. 
+Thus, a natural extension of this work is to 
+study the relationship between the proposed balance and network health. Can nodes define their local health in various ways and what would happen with the greedy algorithm if different health definitions are followed by individual nodes?
 For example routing nodes or liquidity providers might very well want to have high values of $\zeta$ on some of their channels where as they might be willing to accept low values for $\zeta$ on other channels.
 In a similar way merchants will probably prefer many channels with low values of $\zeta$.
-The algorithm could very well be exchanged to a version in which nodes decide their own health metric.
-Along that line one could ask how the heuristic performes if only a fraction of nodes participate in the sharing of rebalancing hints and fee free rebalancing protocol.
+The proposed algorithm could potentially be exchanged to an updated version in which nodes decide their own health metric,
+instead of using balance as the measure of network health.
 
-As the simulation was alrady consuming a lot of computational resources we did not check if the algorithm greedy heuristic ist stable under concurrent payments and rebalancing operations taking place.
-While the design of the lightning network with setting up htlcs which are locked from the balance at that point anyway suggests that this is not a problem it woul still be nice to see this tested.
-In the real world scenario an oscillating algorithm seems to be of little use. 
 
-In section \ref{sec:lnchanges} we have mentioned that besides the communication protocol to share informations about channels there needs to be a transport mechanism for fee free circular payments.
-Obviously the onions could not be reused as a node might steal routing fees and hide them as a rebalancing request.
-This paper did not discuss the crypotgraphic protocols necessary to ensure that a proovably fee free rebalancing operation can be executed.
-While approaches for blockchains with more expressive scripting languages exist \cite{khalil2017revive} we leave it as a future work to provide a cryptographic protocol to be able to fulfill these requests in bitcoin.
-While we tested the algorithm and observed its rather quick convergence it might be interesting to study how it adapts if the topology changes in real time due to opening or closing channels as well as a reallocation of funds due to payments that are taking place.
-
-\section{Acknolegements}\label{sec:ack}
+% ==========================================================================================
+\section{Acknolegements}
+\label{sec:ack}
 We thank xyz...
 
 
