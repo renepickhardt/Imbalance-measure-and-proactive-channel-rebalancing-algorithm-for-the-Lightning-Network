@@ -50,10 +50,10 @@ This prevents routing nodes from learning who paid whom.
 While the lightning network for example shares the capacity of public channels with its participants through its gossip protocol the local split of the capacity of the channels into the balance of its participants is not being shared with the rest of the network for two reasons:
 First this would compromise the privacy as one could collect all changes of the channel balances and reconstruct the flow of payments.
 Second propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technologies.
-The decision to use source base routing together with the unknown channel balances of the network results in a challenge for finding a path of payment channels that have enough balance to be able to route an attempted payment.
-Currently this challenge is met by probing paths until one is found in which each channel has enough balance to forward the payment.
+The decision to use source base routing together with the unknown channel balances of the network results in a challenge for finding a path of payment channels that all have enough balance to be able to route an attempted payment.
+Currently this challenge is met by probing paths until one such path with the desired balance properties is found.
 It has been shown that probing for paths can take more than 3 minutes in more than $5\%$ of the attempted payments \cite{decker2019lnconf} which leads to a poor user experience.
-Imagine a grocery store in which for every 20th customer the cash register would have to wait three minutes until the payment was received.
+Imagine a grocery store in which for every $20^{th}$ customer the cash register would have to wait three minutes until the payment was received.
 
 In this paper we examine the idea of nodes proactively and collaboratively distributing their funds evenly across their channels.
 We introduce the notation of an imbalanced network.
@@ -110,20 +110,21 @@ Note since $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$ we also have $\zeta_{(u,v)} + \zet
 
 The total funds of a participant $u$ are denoted as $\tau_u:=\displaystyle{\sum_{e\in n(u)}b(e_u)}$.
 The value of $\tau_u$ is constant while the balance function $b$ can vary subject to re-allocation of funds.
-To make the following formulas easier to read let us introduce $U:=n_n(u)$ the denote a set of channel partners of participant $u$.
+To make the following formulas easier to read let us introduce $U:=n_n(u)$ which denotes the set of channel partners of participant $u$.
 The total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(e)}$.
 Using the last two definitions let us define the node balance coefficient for a participant $u$ as $\nu_u = \frac{\tau_u}{\kappa_u}$.
 
-Let us call a node $u$ {\bf balanced} if its channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ have the same value.
+Let us call a node $u$ {\bf balanced} if its channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ have the same value.
 This means that the relative distribution of a nodes funds across all its channels is the same.
 Consequently, we consider a node {\bf unbalanced}, if it local channel balance coefficients are unequal.
 Statistically, inequality of a distribution can be measured with the Gini coefficient.
-Thus, for a node $u$ with channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ we define $G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \zeta_j}}$
+Thus, for a node $u$ with channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ we define $G_u = \frac{\displaystyle{\sum_{i\in n(u)} \sum_{j \in n(u)}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in n(u)} \sum_{j \in n(u)} \zeta_j}}$
 If $G_u = 0$ this means that the channel balance coefficents are equal.
 In contrast, if $G_u = 1$ the channel balance coefficients are distributed in the most unequal way.
 
 Note, that the Gini coefficient of a channel balance coefficients of a node $u$ takes the value $0$ if and only if its channel balance coefficents all take the same value.
 This value will be exactly the same as the node's balance coefficient $\nu_u$.
+Nodes which have channels with large differences in capacities will not be able to get a Gini coefficient of 0 if we used absolute balances for the definition of the $\zeta$ values as in such cases smaller channels might be drained by larger ones during rebalancing operations.
 
 Finally, $G$ denotes the imbalance of the network. $G = \displaystyle{\frac{1}{|N|}\sum_{n\in N}G_n}$. Imbalance $G$ is the mean of the imbalance values of all nodes in the network.
 A perfectly balanced network would be achieved if $G$ takes the value of $0$ whereas the balance is poor if the value of $G$ is close to 1.
@@ -431,8 +432,7 @@ instead of using balance as the measure of network health.
 % ==========================================================================================
 \section{Acknowledgements}
 \label{sec:ack}
-We thank ...
-
+We thank Stefan Richter for helpful comments on early drafts of this work.
 
 \bibliography{lightningNetworkHealth}
 \bibliographystyle{plain}
