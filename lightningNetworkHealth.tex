@@ -87,70 +87,79 @@ Similarly, if we want to denote the set of neighboring nodes we use the function
 Naturally, the capacity of every channel $e=(u,v)$ is privately split into the local balances with the balance function $b: E\times N\longrightarrow\mathbb{N}$ such that $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$.
 
 We define the channel balance coefficient for $u$ on the channel $e=(u,v)$ as  $\zeta_{(u,v)} = \frac{b(e_u)}{c(e)}$.
-This is just the relative amount of funds that participant $u$ has in the channel $e$.
+This is just a relative amount of funds that the participant $u$ has in the channel $e$.
 Note since $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$ we also have $\zeta_{(u,v)} + \zeta_{(v,u)}=1$
 
-To make the following formulas easier to read we set $U:=n_n(u)$ the set of channel partners of participant $u$.
+To make the following formulas easier to read let us introduce $U:=n_n(u)$ the denote a set of channel partners of participant $u$.
 The total funds of a participant $u$ are denoted as $\tau_u:=\displaystyle{\sum_{e\in U}b(e_u)}$.
-The values of $\tau_u$ will be constant while the balance function $b$ is pertubed.
+The value of $\tau_u$ is constant while the balance function $b$ can vary subject to re-allocation of funds.
 Similarly the total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(u)}$.
-Using the last two definitions we can define the node balance coefficient for a participant $u$ as $\nu_u = \frac{\tau_u}{\kappa_u}$.
+Using the last two definitions let us define the node balance coefficient for a participant $u$ as $\nu_u = \frac{\tau_u}{\kappa_u}$.
 
-We define a node $u$ healthy if its channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ have the same value.
+Let us call a node $u$ {\bf balanced} if its channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ have the same value.
 This means that the relative distribution of a nodes funds across all its channels is the same.
-Consequently, we consider a node unhealthy if it local channel balance coefficients are unequal.
-Statistically inequality of a distribution is meassured with the Gini coefficient.
-Thus for a node $u$ with channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ we define $G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \zeta_j}}$
-If $G_u = 0$ this means that the channel balance coefficents are equal which we considered as health.
-In contrast if $G_u = 1$ the channel balance coefficients are distributed in the most unequal way meaning the node is unhealthy.
+Consequently, we consider a node {\bf imbalanced}, if it local channel balance coefficients are unequal.
+Statistically, inequality of a distribution can be measured with the Gini coefficient.
+Thus, for a node $u$ with channel balance coefficients $\zeta_{(u,v_1),\dots,\zeta_{(u,v_d)}}$ we define $G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \zeta_j}}$
+If $G_u = 0$ this means that the channel balance coefficents are equal.
+In contrast, if $G_u = 1$ the channel balance coefficients are distributed in the most unequal way.
 
-It is worthwhile to mention and easy to see that the Ginicoefficient of the channel balance coefficients of a node $u$ takes the value $0$ if and only if its channel balance coefficents all take the same value.
-This value will be exactly the same as the node's balance coefficient $\zeta_u$. \footnote{formaly proove this? This will be used in the rebalance algorithm to compute the rebalance amount. so maybe move? }
+Note, that the Gini coefficient of a channel balance coefficients of a node $u$ takes the value $0$ if and only if its channel balance coefficents all take the same value.
+This value will be exactly the same as the node's balance coefficient $\zeta_u$.
 
-Finally the health of the network as $H = \displaystyle{\frac{1}{|N|}\sum_{n\in N}G_n}$ which is just the mean of the health values of all nodes in the network.
-Again a perfect health of the network would be achieved if $H$ takes the value of $0$ where as the health is poor if the value of $H$ is close to 1.
+Finally, $G$ denotes the imbalance of the network. $G = \displaystyle{\frac{1}{|N|}\sum_{n\in N}G_n}$. Imbalance $G$ is the mean of the imbalance values of all nodes in the network.
+A perfectly balanced network would be achieved if $G$ takes the value of $0$ where as the balance is poor if the value of $G$ is close to 1.
 
-Our goal is to find a balance function $b$ which minimizes $H$ given a parivacy aware payment channel network with initial distribution of funds $\tau_{u_1},\dots,\tau_{u_n}$.
+Our goal is to find a balance function $b$ which minimizes $G$ given a privacy aware payment channel network with initial distribution of funds $\tau_{u_1},\dots,\tau_{u_n}$.
 The constraint to this optimization problem that the total funds $\tau_u$ are fixed for every node $u \in N$ and any choice of the balance function $b$.
-As we are in a privacy aware payment channel network the distribution of funds $\tau_{u_1}\dots,\tau_{u_n}$ is not publically known.\footnote{While the initial distribution could be guessed from the funding transactions in the case of the Bitcoin Lightning Network for public channels this distribution will also change with the first payment that is not a rebalancing operation.}
-In the same way the initial balance function is not publically known.
-As we lacking knowledge we cannot aply standard optimization techniques like gradient descent, conjugate gradient methods or simulated annealing.
+In a privacy aware payment channel network the distribution of funds $\tau_{u_1}\dots,\tau_{u_n}$ is not publicly known.\footnote{The initial distribution could be guessed from the funding transactions in the case of the Bitcoin Lightning Network for public channels. Note, this distribution will change with the first payment that is not a rebalancing operation.}
+In the same way the initial balance function is not publicly known.
+As we lack knowledge about the global network state, we cannot apply standard optimization techniques such as gradient descent, conjugate gradient methods or simulated annealing.
 We suggest to use an agent based heuristic in which every participant executes some operations to improve its own help which others support if it also improves their health.
-Before we describe our proposed algorithm in \ref{sec:Algorithm} we will now see a small example of our terminology. 
+In the following subsection we describe a short example using the newly defined terminology. In the subsequent subsection we describe our rebalancing algorithm.
 
-\subsection{Example}\label{sec:example}
+
+\subsection{Example}
+\label{sec:example}
+
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{img/evenUnbalanced.png}
  \caption{A, B and C all own 100 satoshi.}
  \label{fig:evenUnbalanced}
 \end{figure}
-In Figure \ref{fig:evenUnbalanced} you can see an a small network consisting of $3$ nodes in which the balance are distributed unevenly.
-The global balance coefficients for every node are $\nu_u=0.5$.
+
+\cref{fig:evenUnbalanced} depicts a small network consisting of $3$ nodes in which the balances are distributed unevenly.
+The global balance coefficient for every node is $\nu_u=0.5$.
 The $\zeta$ values for each node are $0$ for the channel in which the node owns no funds and $1$ for the channel in which the node owns all the funds.
-This leads to a local health for every node of $0.5$ and a global health of the network of $0.5$.
+This leads to a local imbalance for every node of $0.5$. The global imbalance of the network $G$ is $0.5$.
+
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{img/evenBalanced.png}
  \caption{Each node still owns 100 satoshi but distributed evenly balanced amonth their channels}
  \label{fig:evenBalanced}
 \end{figure}
-Now in Figure \ref{fig:evenBalanced} we see the balanced view of this network.
-The total funds $\tau_u$ stayed constant as it is the constrain of the optimization problem.
-However since the funds have been rebalanced the local balance coefficients $\zeta$ of every channel now take the value of $0.5$ leading to a local health coefficient $G_u=0$ for every node $u\in N$.
-This in turn leads to a perfectly health network with $H=0$.
+
+\cref{fig:evenBalanced} depicts a balanced view of this network.
+The total funds $\tau_u$ stayed constant.
+However, since the funds have been rebalanced the local balance coefficients $\zeta$ of every channel now take the value of $0.5$ leading to a local imbalance coefficient $G_u=0$ for every node $u\in N$.
+This in turn leads to a perfectly balanced network with $G=0$.
 
 Considering multi path payments in both cases of the network every node was able to pay the full funds they owned to every other participant.
-If the edge $e=(A,B)$ was removed in the halthy network $A$ would still be able to pay $B$ with a path over $C$.
-This would not be possible in the unhealthy network as the funds where distributed poorly.
-It is worthwhile to mention that not every network can achieve a perfect global health $H=0$.
+If the edge $e=(A,B)$ was removed in the balanced network $A$ would still be able to pay $B$ with a path over $C$.
+This would not be possible in the imbalanced network as the funds where distributed poorly.
+It is worthwhile to mention that not every network can achieve a perfect global balance $G=0$.
+
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{img/oddUnbalanced.png}
  \caption{Example of an unbalanced network that does not allow for perfect balance as funds are not distributed evenly.}
  \label{fig:oddUnbalanced}
 \end{figure}
-For example let us look at figure \ref{fig:oddUnbalanced} we see due to the fact that the total funds are not distributed evenly (node $D$ owns twice as many funds as the others.
+
+For example, \cref{fig:oddUnbalanced} depicts a case where perfect balance, with $G$ equal to $0$  is not possible. 
+This is due to the fact that the funds are not distributed evenly among nodes -- node $D$ owns twice as many funds as the others.
 
 \begin{figure}
  \centering
@@ -158,10 +167,14 @@ For example let us look at figure \ref{fig:oddUnbalanced} we see due to the fact
  \caption{Best possible balance in a network for which the funds are not distributed equally.}
  \label{fig:oddBalanced}
 \end{figure}
-That there can also be no perfect rebalancing of funds resulting in figure \ref{fig:oddBalanced}.
 
-\subsection{Description of the algorithm}\label{sec:Algorithm}
-As stated before we suggest an agent based heuristic in which participants can use the local knowledge they have in order approach the global optimization problem of finding $b$ such that the health of the network is good.
+
+
+\subsection{Description of the rebalancing algorithm}
+\label{sec:Algorithm}
+
+The developed rebalancing algorithm uses an agent-based heuristic in which participants can use the local knowledge and make local adjustments that result in a global convergence towards an improved overal netowrk balance. 
+The algorithm solves the global optimization problem of finding $b$ such that the balance of the network is improved.
 
 \begin{enumerate}
 \item A node $u$ will compute its node balance coefficient $\nu_u$.
