@@ -387,24 +387,28 @@ One can see in \cref{fig:giniStart} and \cref{fig:giniEnd} how the distribution 
 
 
 % =======================================================================
-\section{Conclusion and Discussion}
+\section{Discussion}
 \label{sec:conclusion}
 
-Our experiments support the assumption that payments along an arbitrary or randomly chosen path have a higher successrate if the network is rather balanced.
-As privacy aware payment channel networks use source based pathfinding without knowing the constraints of the channels along an attempted path the liklihood of conducting a successfull payment with few appempts becomes considerably higher in a balanced network.
-Our results show that nodes do not need to strive for $\nu_u = 0.5$ and perfect local balance of their channels in order to produce a well balanced network with a high successrate of random payments.
-Instead it is sufficient for the overall network to be balanced if every node tries to opimize their channel balance coefficients be rather equal. 
-This can be achieved by optimizing for a low Ginicoefficient of the channel balance coefficients by making circular rebalancing payments.
-In particular we analyzed that the definition of the network imbalance metric as the average of the nodes imbalance metrics is statistically well defined on our test data.
-In particular we showed that one could call a payment channel network healthy if the imbalance of the network is low.
+Our experiments support the assumption that payments along an arbitrary or randomly chosen path have a higher success rate if the network is balanced.
+As privacy aware payment channel networks use source-based pathfinding without knowing the constraints of the channels along an attempted path, the likelihood of conducting a successful payment with few attempts becomes considerably higher in a balanced network.
+Our results show that nodes do not need to strive for $\nu_u = 0.5$ and perfect local balance of their channels in order to produce high success rate of random payments.
+It is sufficient for the overall network to be balanced if every node tries to optimize their channel balance coefficients be almost equal. 
+This can be achieved by optimizing for a low Gini coefficient of the channel balance coefficients by making circular rebalancing payments.
+We have analyzed that the definition of the network imbalance metric as the average of the nodes imbalance metrics is statistically well defined on our test data.
 
-In a similar way as internet routers collaboratevly solve the path finding problem by exchanging routing tables we furthermore suggest for the network to work collaboratively towards achieving a good balanceby locally sharing routing hints and allowing for fee free rebalancing operations if everyone along the path benefits from the operation. 
-As balances of channels in the friend of a friend network can easily be probed it seems plausible in privacy aware payment channel networks to include a communication protocol with which a node signal their partners that it wants to rebalance a certain channel with a certain amount.
-We think that that our suggestion for sharing channels need a rebalancing operation does not reveal more information as can currently be collected with probing attacks anyway.
+In a similar way as Internet routers collaboratively solve the path finding problem by exchanging routing tables, we furthermore suggest for the network to work collaboratively towards achieving a good balance by locally sharing routing hints and allowing for fee-free rebalancing operations if everyone along the path benefits from the operation. 
+As balances of channels in the friend of a friend network can easily be probed, it seems plausible in privacy aware payment channel networks to include a communication protocol with which a node signal their partners that it wants to rebalance a certain channel with a certain amount.
+We think that our suggestion for sharing channels need for a rebalancing operation does not reveal more information as can currently be collected with probing attacks.
 
-\section{Future Work}\label{sec:future}
-We empirically verified that the health measure increases the overall ability of network participants to route payments on random paths.
-However the health measure has some edge cases in which it is breaking with the intuitive semantics a person would have.
+
+
+% =========================================================================================
+\section{Future Work}
+\label{sec:future}
+
+We empirically verified that the overall ability of network participants to route payments on random paths is improved in a balanced network. 
+However, the health measure has some edge cases in which it is breaking with the intuitive semantics a person would have.
 Consider for example a node that opens $d$ channels and has all the funds on its side.
 In that case the local channel coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ would all take the value of $1$ resulting in $G_0 = 0$ meaning this node is in perfect health.
 From a network perspective this node can neither forward any payments can it participat in rebalancing operations.
