@@ -23,17 +23,17 @@
 \hrule 
 \begin{abstract}
   Making a payment in privacy aware payment channel networks is currently achieved by trying several payment paths until one succeeds which can yield to several minutes for a payment to complete.
-  We introduce a network imbalance measure and provide emperical evidence that a better balance of the network leads to higher a success rate when making random payments.
+  We introduce a network imbalance measure and provide empirical evidence that a better balance of the network leads to higher a success rate when making random payments.
   We formulate the optimization problem of improving the balance of the network as a sequence of rebalancing operations of the funds within the channels along circular paths within the network.
-  As the funds and balances of channels are not globally known we introduce a greedy heuristic with which every node despite the uncertainty can improve its own balance.
-  Since the balance of the network is defined as the average of the balance of its participants the network balance will be improved if any participant improves its own balance. 
-  We also suggest to allow channel partners to share information with each other which can be probed anyway and engage in fee free rebalancing operations if that operation is benefitial for the balance of every participant along the rebalancing circle.
-  In this way participants will only be able to improve their balance if this operation does not worsen the balance of other nodes making sure that the heuristic will always improve the balance of the network.
-  We show emperically on synthetic random networks that the balance measure is well defined and that our greedy heuristic quickly converges into a balanced enough network that supports random payments without failures.
+  As the funds and balances of channels are not globally known we introduce a greedy heuristic with which every node despite the uncertainty can improve its own local balance.
+  Since the balance of the network is defined as the average of the balance of all the participating nodes, the network balance will be improved if any participant improves its own balance. 
+  We also suggest to allow channel partners to share information with each other and engage in fee-free rebalancing operations if that operation is beneficial for the balance of every participant along the rebalancing circle.
+  In this way participants will only be able to improve their balance if this operation does not worsen the balance of other nodes. This ensures that the heuristic will always improve the balance of the network.
+  We show empirically on synthetic random networks that the balance measure is well defined and that our algorithm quickly converges to a balanced enough network that supports random payments without failures.
 \end{abstract}
 
 \begin{keywords}
-Optimization, convex optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, agent based systems, collaborative problem solving, 
+optimization, convex optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, agent based systems, collaborative problem solving, 
 \end{keywords}
 \hrule\bigskip
 ]
