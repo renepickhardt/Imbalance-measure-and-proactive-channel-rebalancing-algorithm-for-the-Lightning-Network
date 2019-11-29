@@ -39,20 +39,39 @@ Optimization, convex optimization, Bitcoin, Lightning Network, payment channel n
 ]
 
 \section{Introduction}
-A major problem within privacy aware payment channel networks such as the lightning network is that the local balance of channels is not being shared with the rest of the network.
-For privacy reasons the transport layer for routing payments is a source based onion routing scheme like the Sphinx Mix format \cite{danezis2009sphinx}.
-Thus finding a path through the network is currently achieved by probing paths until one is found in which each channel has enough local liquidity to forward the payment.
-It has been shown that probing for paths can take up to several minutes including 100 or more tries.\cite{decker2019lnconf}
+Payment channel networks have been introduced to mitigate the scaling issues of blockchain technologies such as Bitcoin\cite{poon2016bitcoin}.
+With the help of smart contracts payment channels are created that allow the cryptographically secure transfer of value without the necessity to record the transaction to the central ledger.
+This yields new and interesting privacy properties for the participants of the network.
+In order to protect the privacy while routing a payment through several payment channels privacy aware payment cannel networks use a source based onion routing scheme like the Sphinx Mix format \cite{danezis2009sphinx}.
+This prevents routing nodes from learning who paid whom.
 
-One suggestion is that nodes on the lightning network could proactively re-balance their channels.
-If the channel capacity was always perfectly split in half as the local balance path finding would in fact become as trivial as computing Dijkstra's algorithm.
-It is trivial to see that neither initially nor after conducting payments the funds are distributed evenly among the participants so that we cannot have the goal to design an algorithm that helps to re-balance the funds fully evenly without asking participants to give money to other participants for fee which obviously is economically infeasible. 
+While the lightning network for example shares the capacity of public channels with its participants through its gossip protocol the local split of the capacity of the channels into the balance of its participants is not being shared with the rest of the network for two reasons:
+First this would compromise the privacy as one could collect all changes of the channel balances and reconstruct the flow of payments.
+Second propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technologies.
+The decision to use source base routing together with the unknown channel balances of the network results in a challange for finding a path of payment channels that have enough balance to be able to route an attempted payment.
+Currently this challange is met by probing paths until one is found in which each channel has enough balance to forward the payment.
+It has been shown that probing for paths can take more than 3 minutes in more than $5\%$ of the attempted payments \cite{decker2019lnconf} which leads to a poor user experience.
+Imagine a grocery store in which for every 20th customer the cashregister would have to wait three minutes until the payment was received.
 
-We introduce a local and a global health measure for privacy aware payment channel networks which nodes can work towards achieving.
+In this paper we examine the idea of nodes proactively and collaboratively distributing their funds evenly accross their channels.
+We introduce the notation of an imbalanced network.
+The imbalance is measured as the average of the imbalance scores of its nodes.
+The node's imbalance of payment channels as the gini coefficient of a node's channel balance coefficients which are the relative amount of funds a node owns in a channel in comparison to the capacity of that channel.
+In particular nodes already have all the information they need to compute their imbalance. 
+Nodes can reduce their imbalance either alone or collaboratively with the help of its channel partners by conducting circulare payments which is also known as rebalancing.
+
+We formulate an optimization problem of finding a squence of rebalance operation that minimizes the networks imbalance.
+As the information necessary to solve the optimization problem is not publically known in privacy aware payment channel networks we provide a greedy privacy aware agent based heuristic for its participants to find a minimum for the problem. 
+In an empirical study we show that the greedy heuristic will lead to a $100\%$ successrate for an arbitrary payment to succeed.
+We show that this is always the case if the balance of the network is good enough meaning that the imbalance score is low enough.
+In particular we see that participants do not have to follow a strategy of having as much inbound capacity as outbound capacity for this algorithm to work. 
+
+While single nodes can already execute the algorithm in currently existing payment channel networks they are economically disincentiviced to do so.
+We thus discuss the possability to introduce fee free rebalancing and for the sake of speed we suggest that nodes share with their neighbors on which local channels they would like to have inbound or outbound capacity. 
 
 The remainder of this paper is organized as follows in section \ref{sec:relatedWork} we give a short overview of related work in this field.
-We then introduce the notation and definition of our health score in section \ref{sec:formalization}.
-After we show a small example of our definitions in section \ref{sec:example} we formulate the optimization problem to improve the health and propose an algorithm in \ref{sec:Algorithm}.
+We then introduce the notation and definition of the imbalance score in section \ref{sec:formalization}.
+After we show a small example of our definitions in section \ref{sec:example} we formulate the optimization problem to reduce the imbalance and propose a greedy, agent based and collaborative algorithm in \ref{sec:Algorithm} to address the optimization problem.
 To improve the computational overhead of the algorithm we propose a few changes to the lightning network protocol in section \ref{sec:lnchanges}.
 In section \ref{sec:setup} we introduce the experimental setup and the data set that we used.
 After showing our empirical results in \ref{sec:results} we discuss the results and propose some future work in the last two sections.
