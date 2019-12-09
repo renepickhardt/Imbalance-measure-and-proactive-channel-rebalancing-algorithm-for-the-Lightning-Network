@@ -1,9 +1,23 @@
+"""
+ TODOS:
+* add randomization
+* add selfish rebalancing
+* find out why some channels have no rebalancing at all in the algorithm
+
+idea introduce a fee with desperation!
+
+"""
+
 import networkx as nx
 import time
 import random
 import matplotlib.pyplot as plt
 import sys
 import numpy as np
+
+#dataset = "example_network"
+dataset = "directed_lightning_network"
+experiment_name = "better_balanced_" + dataset + "_fees_3_5000_strict"
 
 
 class Network:
@@ -22,6 +36,7 @@ class Network:
     def __init__(self, file_name):
         self.G = nx.DiGraph()
         self.nu = {}
+        self.w = open(experiment_name + "rebalancing_operations", "w")
         f = open(file_name, "r")
         for line in f:
             fields = line[:-1].split("\t")
@@ -31,6 +46,7 @@ class Network:
         self.__compute_rebalance_Graph()
         print("imported a graph with {} nodes and {} edges ".format(
             len(self.G), len(self.G.edges())/2))
+        self.fees = {n: 0 for n in self.G}
 
     def compute_rebalance_directions(self):
         self.flow = nx.DiGraph()
@@ -39,8 +55,10 @@ class Network:
             balance = self.G[u][v]["balance"]
             capacity = self.G[u][v]["capacity"]
             zeta = balance / capacity
+            #print(u, v, nu, zeta,)
             if zeta > nu:
                 amt = int(capacity*(zeta - nu))
+                # print(amt)
                 self.flow.add_edge(u, v, liquidity=amt)
 
         # paths = dict(nx.all_simple_paths(self.flow, 6)
@@ -60,18 +78,19 @@ class Network:
             for v in self.flow[u]:
                 key = u + ":" + v
                 self.paths[key] = []
-                for cnt, path in enumerate(nx.all_simple_paths(self.flow, v, u, 4)):
-                    if cnt > 100:
+                for cnt, path in enumerate(nx.all_simple_paths(self.flow, v, u, 3)):
+                    if cnt > 5000:
                         #print("too many paths")
                         break
                     self.paths[key].append(path)
-            if (c % 10) == 0:
+            if (c % 50) == 0:
                 print(c)
 
     def __compute_rebalance_amount(self, circle):
         ptr = 1
         amt = sys.maxsize
-        while ptr < len(circle):
+        # FIXME: better way to explain -1 as channel propagation scheme
+        while ptr < len(circle):  # -1:
             src = circle[ptr-1]
             dest = circle[ptr]
             ptr += 1
@@ -79,15 +98,31 @@ class Network:
             if tmp < amt:
                 amt = tmp
         return amt
+        #src = circle[ptr-1]
+        #dest = circle[ptr]
+        # if self.G[src][dest]["balance"] > amt:
+        #    return amt
+        # else:
+        #    return int(self.G[src][dest]["balance"]/2)
 
     def __update_channels(self, circle, amt):
         ptr = 1
+        fees = 0
         while ptr < len(circle):
             src = circle[ptr-1]
             dest = circle[ptr]
+            if ptr > 1:
+                base = self.G[src][dest]["base"]
+                rate = self.G[src][dest]["rate"] * amt / float(1000000)
+                fee = base + rate
+                fees += fee
+                self.fees[src] += fee
             ptr += 1
             self.G[src][dest]["balance"] -= amt
             self.G[dest][src]["balance"] += amt
+        self.fees[circle[0]] -= fees
+        self.w.write("{}\t{}\n".format(amt, " ".join(circle)))
+        self.w.flush()
 
     def __update_flow(self, circle, amt):
         ptr = 1
@@ -96,6 +131,8 @@ class Network:
             dest = circle[ptr]
             ptr += 1
             self.flow[src][dest]["liquidity"] -= amt
+            # if self.flow[src][dest]["liquidity"] <=1 :
+            #    self.flow.remove_edge(src, dest)
 
     def rebalance_circle(self, circle):
         assert circle[0] == circle[-1]
@@ -103,20 +140,26 @@ class Network:
         amt = self.__compute_rebalance_amount(circle)
         if amt < 1:
             return
-        #print(amt, "to be rebalanced")
+        # print(amt, "to be rebalanced")
         self.__update_flow(circle, amt)
         self.__update_channels(circle, amt)
+        # print(amt)
 
     def make_one_step(self):
-        #path = random.sample(list(self.paths.values()), 1)[0]
+        # path = random.sample(list(self.paths.values()), 1)[0]
         cnt = 1
         for k, paths in self.paths.items():
             for path in paths:
+                # print(path)
                 path.append(path[0])
                 self.rebalance_circle(path)
-                if cnt % 10000 == 0:
+                if cnt % 250000 == 0:
                     print(cnt)
                 cnt += 1
+        w = open(experiment_name+"fees", "w")
+        for n, fees in self.fees.items():
+            w.write("{}\t{}\n".format(n, fees))
+        w.flush()
 
     def gini(self, x):
         # FIXME: replace with a more efficient implementation
@@ -142,8 +185,9 @@ class Network:
 
 print("test")
 
-n = Network("directed_lightning_network")
-for i in range(200):
+n = Network(dataset)
+w = open(experiment_name + "imbalance", "w")
+for i in range(150):
     start = time.time()
     n.compute_rebalance_directions()
     end = time.time()
@@ -153,18 +197,20 @@ for i in range(200):
     end = time.time()
     print(end-start, "time to rebalance the circles")
     start = time.time()
-    print(n.health(), "imbalance (average of gini coefficients)")
+    h = n.health()
+    print(h, "imbalance (average of gini coefficients)")
+    w.write("{}\t{}\n".format(i, h))
+    w.flush()
     end = time.time()
     print(end-start, "time to compute the ginis")
-    break
+    raw_data = open(experiment_name + "step_"+str(i), "w")
+    for node in n.G:
+        # raw_data.write(node)
+        for adj in n.G[node]:
+            capacity = n.G[node][adj]["capacity"]
+            balance = n.G[node][adj]["balance"]
 
-
-raw_data = open("better_balanced_network", "w")
-for node in n.G:
-    # raw_data.write(node)
-    for adj in n.G[node]:
-        capacity = n.G[node][adj]["capacity"]
-        balance = n.G[node][adj]["balance"]
-
-        raw_data.write("{}\t{}\t{}\t{}\t{}\n".format(
-            node, adj, capacity, balance, balance/capacity))
+            raw_data.write("{}\t{}\t{}\t{}\t{}\n".format(
+                node, adj, capacity, balance, balance/capacity))
+    raw_data.close()
+w.close()
