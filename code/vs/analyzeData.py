@@ -90,6 +90,9 @@ class Network:
             self.zetas[src][dest] = self.__compute_zeta(src, dest)
             self.ginis[src] = self.gini(list(self.zetas[src].values()))
 
+    def get_nu_dist(self):
+        return list(self.nu.values())
+
     def simulate_precomputed_rebalance_operations(self, file_name):
         f = open(file_name, "r")
         imbalance_scores = []
@@ -224,6 +227,16 @@ def open_array(name):
 
 
 n = Network(dataset)
+nus = n.get_nu_dist()
+plt.hist(nus, bins=20)
+plt.grid()
+plt.xlabel("Node's balance coefficient $ \\nu = \\frac{\\tau}{\\kappa} $")
+plt.ylabel("Frequency $ C(\\nu) $")
+plt.title("Distribution of relative funds across the network")
+plt.savefig(
+    "fig/distribution_of_nus.png")
+plt.show()
+# exit()
 recalc = False
 if recalc:
     lengths, unbalanced = n.evaluate_routing_paths()
@@ -243,14 +256,25 @@ if recalc_payment_expected_value:
 
 unbalanced_ginis = n.get_gini_distribution()
 print(n.imbalance())
-# plt.hist(unbalanced_ginis)
-# plt.show()
+plt.hist(unbalanced_ginis, bins=20)
+plt.title("Initial Distribution of nodes Ginicoefficients (imbalanced Network)")
+plt.xlabel("Imbalance (Ginicoefficients $G_v$) of nodes")
+plt.ylabel("Frequency $C(G_v)$")
+plt.grid()
+plt.savefig("fig/initial_ginis_before_rebalancing.png")
+plt.close()
 
 n.load_balance(balances_file_name)
 balanced_ginis = n.get_gini_distribution()
 
-#plt.hist(balanced_ginis, label="Balanced Network (G = 0.188)")
-# plt.show()
+plt.hist(balanced_ginis, bins=20, label="Balanced Network (G = 0.188)")
+plt.title("Final Distribution of nodes Ginicoefficients (balanced Network)")
+plt.xlabel("Imbalance (Ginicoefficients $G_v$) of nodes")
+plt.ylabel("Frequency $C(G_v)$")
+plt.grid()
+plt.savefig("fig/Final_ginis_after_rebalancing.png")
+plt.close()
+
 bins = [0.01 * x for x in range(100)]
 plt.title("Comparing Imbalance scores of nodes in Networks")
 ba_res, _, _ = plt.hist(balanced_ginis, bins=bins, cumulative=True,
