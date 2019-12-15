@@ -226,6 +226,39 @@ def open_array(name):
     return arr
 
 
+def show_lightning_has_some_outlier_high_fees():
+    f = open("directed_lightning_network", "r")
+    for l in f:
+        base = int(l[:-1].split("\t")[5])
+        if base > 100000:
+            print(base)
+
+
+f = open("finalResults/fullExperimentNonStrictRebalancing/better_balanced_directed_lightning_network_fees_3_5000_fees", "r")
+fees = []
+tp = 0
+fn = 0
+for l in f:
+    fee = float(l[:-1].split("\t")[1])
+    # if abs(fee) > 100000000:
+    if abs(fee) > 10000:
+        print(fee)
+        fn += 1
+    else:
+        fees.append(fee/1000)
+        tp += 1
+print(max(fees), tp, fn)
+
+
+plt.hist(fees, bins=20)
+plt.title("Distribution of earned / spend fees of nodes while rebalancing")
+plt.xlabel("earned fees $x$ [satoshis]")
+plt.ylabel("Frequency $C(x)$")
+plt.grid()
+plt.savefig("fig/distribution_of_fees.png")
+
+exit()
+
 n = Network(dataset)
 nus = n.get_nu_dist()
 plt.hist(nus, bins=20)

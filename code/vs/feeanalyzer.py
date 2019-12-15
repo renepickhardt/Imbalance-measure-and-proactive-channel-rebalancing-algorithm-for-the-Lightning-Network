@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-f = open("better_balanced_directed_lightning_network_fees_3_5000_fees", "r")
+f = open("finalResults/fullExperimentNonStrictRebalancing/better_balanced_directed_lightning_network_fees_3_5000_fees", "r")
 
 fees = []
 for l in f:
@@ -19,6 +19,7 @@ for l in f:
         print(base)
 
 plt.hist(fees, bins=20)
+plt.grid()
 plt.show()
 
 

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-f = open("better_balanced_directed_lightning_network_fees_3_5000_rebalancing_operations", "r")
+f = open("finalResults/fullExperimentNonStrictRebalancing/better_balanced_directed_lightning_network_fees_3_5000_rebalancing_operations", "r")
 amts = []
 for operation in f:
     amt, circle = operation.split("\t")
@@ -18,7 +18,7 @@ def running_mean(x, N):
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
 
-avg = running_mean(amts, 500)
+avg = running_mean(amts, 50000)
 plt.plot(avg)
 # plt.yscale("log")
 plt.grid()
