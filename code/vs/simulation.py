@@ -17,7 +17,7 @@ import numpy as np
 
 #dataset = "example_network"
 dataset = "directed_lightning_network"
-experiment_name = "better_balanced_" + dataset + "_fees_3_5000_strict"
+experiment_name = "better_balanced_" + dataset + "_fees_3_5000_mpp"
 
 
 class Network:
@@ -90,20 +90,20 @@ class Network:
         ptr = 1
         amt = sys.maxsize
         # FIXME: better way to explain -1 as channel propagation scheme
-        while ptr < len(circle):  # -1:
+        while ptr < len(circle)-1:
             src = circle[ptr-1]
             dest = circle[ptr]
             ptr += 1
             tmp = self.flow[src][dest]["liquidity"]
             if tmp < amt:
                 amt = tmp
-        return amt
-        #src = circle[ptr-1]
-        #dest = circle[ptr]
-        # if self.G[src][dest]["balance"] > amt:
-        #    return amt
-        # else:
-        #    return int(self.G[src][dest]["balance"]/2)
+        # return amt
+        src = circle[ptr-1]
+        dest = circle[ptr]
+        if self.G[src][dest]["balance"] > amt:
+            return amt/10
+        else:
+            return int(self.G[src][dest]["balance"]/20)
 
     def __update_channels(self, circle, amt):
         ptr = 1

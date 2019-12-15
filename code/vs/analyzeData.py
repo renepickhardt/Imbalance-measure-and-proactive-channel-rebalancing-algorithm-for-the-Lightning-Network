@@ -129,6 +129,10 @@ class Network:
     def imbalance(self):
         return np.mean(list(self.ginis.values()))
 
+    def get_gini_distribution(self):
+        self.__compute_metrics()
+        return list(self.ginis.values())
+
     def load_balance(self, file_name):
         f = open(file_name, "r")
         for l in f:
@@ -176,7 +180,7 @@ class Network:
         plt.hist(lengths, bins=[0, 1, 2, 3, 4, 5,
                                 6, 7, 8, 9, 10], cumulative=True, normed=True, histtype="step", linestyle=("solid"),  linewidth=3)
         plt.xlabel("Distance (d) edges")
-        plt.ylabel("Cumulative distribtion ($P(x\geq d)$)")
+        plt.ylabel("Cumulative distribution ($P(x\geq d)$)")
         plt.title(
             "Distance distribution of shortest paths on the base fee graph")
         plt.yscale("log")
@@ -189,10 +193,10 @@ class Network:
         plt.hist(balanced, bins=list(range(0, 17000000, 1000)), cumulative=True,
                  normed=True, histtype="step", linestyle=("solid"),  linewidth=3, label="Balanced Network (G = 0.188)")
         plt.hist(unbalanced, bins=list(range(0, 17000000, 10000)), cumulative=True,
-                 normed=True, histtype="step", linestyle=("solid"),  linewidth=3, label="Imbalanced Network G = 0.5")
+                 normed=True, histtype="step", linestyle=("solid"),  linewidth=3, label="Imbalanced Network G = 0.497")
 
         plt.xlabel("Maximum possible payable amount (a) [sat]")
-        plt.ylabel("Cumulative distribtion ($P(x\geq a)$)")
+        plt.ylabel("Cumulative distribution ($P(x\geq a)$)")
         plt.title("Distribution of payable amounts on all pair cheapest paths")
         plt.xlim(0, 300000)
         # plt.yscale("log")
@@ -229,15 +233,54 @@ if recalc:
     lenghts, balanced = n.evaluate_routing_paths()
     save_array(balanced, "balanced_payment_dist")
 
-lengths = open_array("length_dist")
-unbalanced = open_array("unbalanced_payment_dist")
-balanced = open_array("balanced_payment_dist")
+recalc_payment_expected_value = False
+if recalc_payment_expected_value:
+    lengths = open_array("length_dist")
+    unbalanced = open_array("unbalanced_payment_dist")
+    balanced = open_array("balanced_payment_dist")
+    n.load_balance(balances_file_name)
+    n.plot_payable_amt_histogram(lengths, balanced, unbalanced)
+
+unbalanced_ginis = n.get_gini_distribution()
+print(n.imbalance())
+# plt.hist(unbalanced_ginis)
+# plt.show()
+
 n.load_balance(balances_file_name)
+balanced_ginis = n.get_gini_distribution()
 
-n.plot_payable_amt_histogram(lengths, balanced, unbalanced)
+#plt.hist(balanced_ginis, label="Balanced Network (G = 0.188)")
+# plt.show()
+bins = [0.01 * x for x in range(100)]
+plt.title("Comparing Imbalance scores of nodes in Networks")
+ba_res, _, _ = plt.hist(balanced_ginis, bins=bins, cumulative=True,
+                        normed=True, histtype="step", linestyle=("solid"),  linewidth=3, label="Balanced Network (G = 0.188)")
+unba_res, _, _ = plt.hist(unbalanced_ginis, bins=bins, cumulative=True,
+                          normed=True, histtype="step", linestyle=("solid"),  linewidth=3, label="Imbalanced Network (G = 0.497)")
+
+m = 0
+idx = 0
+for i in range(len(ba_res)):
+    t = abs(ba_res[i] - unba_res[i])
+    if t > m:
+        m = t
+        idx = i
+print(m, idx)
+
+plt.plot([idx*0.01, idx*0.01], [unba_res[idx], ba_res[idx]],
+         linewidth=3, label="Kolmogorov Smirnoff Distance = {:4.2f}".format(m))
+
+plt.grid()
+plt.xlabel("Imbalance (Ginicoefficients $G_v$) of nodes")
+plt.ylabel("Cumulative distribution ($P(x\geq G_v)$)")
+plt.xlim(0, 0.95)
+plt.legend(loc="lower right")
+plt.savefig(
+    "fig/comparison distribution of Ginicoefficients.png")
+
+plt.show()
+
 exit()
-imba = n.simulate_precomputed_rebalance_operations(experiment_name)
-
 w = open(experiment_name + "_imbascores_per_rebalance", "w")
 for imbalance in imba:
     w.write(imbalance + "\n")
