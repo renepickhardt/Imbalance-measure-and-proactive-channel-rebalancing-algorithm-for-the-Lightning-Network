@@ -20,6 +20,8 @@ plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
 dataset = "directed_lightning_network"
 recompute_all_pair_shortest_paths = False
 experiment_name = "finalResults/fullExperimentNonStrictRebalancing/better_balanced_directed_lightning_network_fees_3_5000_rebalancing_operations"
+experiment_name = "finalResults/better_balanced_directed_lightning_network_fees_4_5000_rebalancing_operations"
+
 balances_file_name = "finalResults/fullExperimentNonStrictRebalancing/better_balanced_directed_lightning_network_fees_3_5000_step_144"
 # experiment_name = "test"
 
@@ -255,7 +257,8 @@ def show_lightning_has_some_outlier_high_fees():
 
 
 n = Network(dataset)
-# n.simulate_precomputed_rebalance_operations(experiment_name)
+n.simulate_precomputed_rebalance_operations(experiment_name)
+exit()
 
 f = open(experiment_name+"_stats", "r")
 imba_scores = []
