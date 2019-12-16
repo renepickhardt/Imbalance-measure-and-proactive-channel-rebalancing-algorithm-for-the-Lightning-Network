@@ -95,16 +95,35 @@ class Network:
 
     def simulate_precomputed_rebalance_operations(self, file_name):
         f = open(file_name, "r")
-        imbalance_scores = []
-        for line in f:
+        w = open(experiment_name + "_imbascores_per_rebalance", "w")
+        stats = open(experiment_name + "_stats", "w")
+        hist = {}
+        for cnt, line in enumerate(f):
             amt, circle = line[:-1].split("\t")
             amt = float(amt)
             circle = circle.split(" ")
             self.__update_channels(circle, amt)
-            imbalance_scores.append(self.imbalance())
-            if len(imbalance_scores) % 100 == 0:
-                print(len(imbalance_scores), imbalance_scores[-1])
-        return imbalance_scores
+            imbalance = self.imbalance()
+            key = "{0:.2f}".format(imbalance)
+            if key not in hist:
+                _, amts = self.evaluate_routing_paths()
+                hist[key] = amts
+                z = 0
+                for amt in amts:
+                    if amt == 0:
+                        z += 1
+                print(key, np.median(amts), z, z/len(amts))
+                stats.write("{}\t{}\t{}\t{}\n".format(
+                    key, np.median(amts), z, z/len(amts)))
+                stats.flush()
+            w.write("{}\n".format(imbalance))
+
+            if cnt % 1000 == 0:
+                w.flush()
+                print(cnt, imbalance)
+        w.close()
+        stats.close()
+        return hist
 
     def gini(self, x):
         # FIXME: replace with a more efficient implementation
@@ -172,7 +191,7 @@ class Network:
             path = l[:-1].split("\t")
             l = len(path)
             lengths.append(l)
-            if len(lengths) % 100000 == 0:
+            if len(lengths) % 250000 == 0:
                 print(len(lengths))
             amt = self.__compute_rebalance_amount(path)
             amts.append(amt)
@@ -208,6 +227,7 @@ class Network:
         plt.legend(loc="lower right")
         plt.savefig(
             "fig/maximum_payable_amount_all_pair_chepest_paths_balanced_network.png")
+        plt.close()
 
 
 def save_array(arr, name):
@@ -234,6 +254,46 @@ def show_lightning_has_some_outlier_high_fees():
             print(base)
 
 
+n = Network(dataset)
+# n.simulate_precomputed_rebalance_operations(experiment_name)
+
+f = open(experiment_name+"_stats", "r")
+imba_scores = []
+median_payments = []
+failure_rates = []
+success_rates = []
+for line in f:
+    vals = line[:-1].split()
+    imba_scores.append(float(vals[0]))
+    median_payments.append(int(float(vals[1])))
+    failure_rates.append(float(vals[3]))
+    success_rates.append(1 - failure_rates[-1])
+plt.plot(imba_scores, median_payments, "x")
+plt.title("Comparing Network balance with possible payment size")
+plt.xlabel("Network imbalance (G)")
+plt.ylabel("Median possible payment size [satoshi]")
+plt.grid()
+plt.show()
+plt.savefig("fig/imba_vs_median_payment_size.png")
+plt.close()
+plt.plot(imba_scores, failure_rates, "x")
+plt.title("Comparing Network balance with failure rate of random payments")
+plt.xlabel("Network imbalance (G)")
+plt.ylabel("Failure rate of random payment")
+plt.grid()
+plt.show()
+plt.savefig("fig/imba_vs_failure_rates.png")
+plt.close()
+plt.plot(imba_scores, success_rates, "x")
+plt.title("Comparing Network balance with success rate of random payments")
+plt.xlabel("Network imbalance (G)")
+plt.ylabel("Success rate of random payment")
+plt.grid()
+plt.show()
+plt.savefig("fig/imba_vs_success_rates.png")
+plt.close()
+exit()
+
 f = open("finalResults/fullExperimentNonStrictRebalancing/better_balanced_directed_lightning_network_fees_3_5000_fees", "r")
 fees = []
 tp = 0
@@ -256,8 +316,8 @@ plt.xlabel("earned fees $x$ [satoshis]")
 plt.ylabel("Frequency $C(x)$")
 plt.grid()
 plt.savefig("fig/distribution_of_fees.png")
-
-exit()
+plt.close()
+# exit()
 
 n = Network(dataset)
 nus = n.get_nu_dist()
@@ -268,7 +328,9 @@ plt.ylabel("Frequency $ C(\\nu) $")
 plt.title("Distribution of relative funds across the network")
 plt.savefig(
     "fig/distribution_of_nus.png")
-plt.show()
+# plt.show()
+plt.close()
+
 # exit()
 recalc = False
 if recalc:
@@ -279,7 +341,7 @@ if recalc:
     lenghts, balanced = n.evaluate_routing_paths()
     save_array(balanced, "balanced_payment_dist")
 
-recalc_payment_expected_value = False
+recalc_payment_expected_value = True
 if recalc_payment_expected_value:
     lengths = open_array("length_dist")
     unbalanced = open_array("unbalanced_payment_dist")
@@ -287,6 +349,7 @@ if recalc_payment_expected_value:
     n.load_balance(balances_file_name)
     n.plot_payable_amt_histogram(lengths, balanced, unbalanced)
 
+n = Network(dataset)
 unbalanced_ginis = n.get_gini_distribution()
 print(n.imbalance())
 plt.hist(unbalanced_ginis, bins=20)
@@ -336,10 +399,3 @@ plt.savefig(
     "fig/comparison distribution of Ginicoefficients.png")
 
 plt.show()
-
-exit()
-w = open(experiment_name + "_imbascores_per_rebalance", "w")
-for imbalance in imba:
-    w.write(imbalance + "\n")
-w.flush()
-w.close()
