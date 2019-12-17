@@ -256,45 +256,108 @@ def show_lightning_has_some_outlier_high_fees():
             print(base)
 
 
-n = Network(dataset)
-n.simulate_precomputed_rebalance_operations(experiment_name)
-exit()
+#n = Network(dataset)
+# n.simulate_precomputed_rebalance_operations(experiment_name)
+# exit()
 
-f = open(experiment_name+"_stats", "r")
-imba_scores = []
-median_payments = []
-failure_rates = []
-success_rates = []
-for line in f:
-    vals = line[:-1].split()
-    imba_scores.append(float(vals[0]))
-    median_payments.append(int(float(vals[1])))
-    failure_rates.append(float(vals[3]))
-    success_rates.append(1 - failure_rates[-1])
-plt.plot(imba_scores, median_payments, "x")
-plt.title("Comparing Network balance with possible payment size")
+def parse_stats_results(filename):
+    f = open(filename, "r")
+    imba_scores = []
+    median_payments = []
+    failure_rates = []
+    success_rates = []
+    for line in f:
+        vals = line[:-1].split()
+        imba_scores.append(float(vals[0]))
+        median_payments.append(int(float(vals[1])))
+        failure_rates.append(float(vals[3]))
+        success_rates.append(1 - failure_rates[-1])
+    return (imba_scores, median_payments, failure_rates, success_rates)
+
+
+# define keys for experiments
+mpp = "mpp-rebalancing"
+foaf = "foaf-rebalancing"
+cycle4 = "cycles of lenght 4"
+cycle5 = "cycles of length 5"
+results = {mpp: {}, foaf: {}, cycle4: {}, cycle5: {}}
+# define keys for statistics
+imbalance_measure = "imbalance_measure"
+median_payments = "median_payments"
+failure_rates = "failure_rates"
+success_rates = "success_rates"
+
+results[mpp][imbalance_measure], results[mpp][median_payments], results[mpp][failure_rates], results[mpp][success_rates] = parse_stats_results(
+    "finalResults/statistics/better_balanced_directed_lightning_network_fees_3_5000_mpprebalancing_operations_stats")
+results[foaf][imbalance_measure], results[foaf][median_payments], results[foaf][failure_rates], results[foaf][success_rates] = parse_stats_results(
+    "finalResults/statistics/better_balanced_directed_lightning_network_fees_3_5000_rebalancing_operations_stats")
+results[cycle4][imbalance_measure], results[cycle4][median_payments], results[cycle4][failure_rates], results[cycle4][success_rates] = parse_stats_results(
+    "finalResults/statistics/better_balanced_directed_lightning_network_fees_3_5000_strictrebalancing_operations_stats")
+results[cycle5][imbalance_measure], results[cycle5][median_payments], results[cycle5][failure_rates], results[cycle5][success_rates] = parse_stats_results(
+    "finalResults/statistics/better_balanced_directed_lightning_network_fees_4_5000_rebalancing_operations_stats")
+print("done")
+keys = [mpp, foaf, cycle4,  cycle5]
+for key in keys:
+    plt.plot(results[key][imbalance_measure],
+             results[key][median_payments], label=key, linewidth=3)
+plt.title("Comparing Network imbalance with possible payment size")
 plt.xlabel("Network imbalance (G)")
 plt.ylabel("Median possible payment size [satoshi]")
+plt.legend(loc="upper right")
 plt.grid()
-plt.show()
 plt.savefig("fig/imba_vs_median_payment_size.png")
 plt.close()
-plt.plot(imba_scores, failure_rates, "x")
-plt.title("Comparing Network balance with failure rate of random payments")
+
+for key in keys:
+    plt.plot(results[key][imbalance_measure],
+             results[key][failure_rates], label=key, linewidth=3)
+plt.title("Comparing Network imbalance with failure rate of random payments")
 plt.xlabel("Network imbalance (G)")
 plt.ylabel("Failure rate of random payment")
 plt.grid()
-plt.show()
+plt.legend(loc="upper left")
 plt.savefig("fig/imba_vs_failure_rates.png")
 plt.close()
-plt.plot(imba_scores, success_rates, "x")
-plt.title("Comparing Network balance with success rate of random payments")
+
+for key in keys:
+    plt.plot(results[key][imbalance_measure],
+             results[key][success_rates], label=key, linewidth=3)
+plt.title("Comparing Network imbalance with success rate of random payments")
 plt.xlabel("Network imbalance (G)")
 plt.ylabel("Success rate of random payment")
 plt.grid()
-plt.show()
+plt.legend(loc="lower left")
 plt.savefig("fig/imba_vs_success_rates.png")
 plt.close()
+
+
+def parse_imbalance_scores(filename):
+    f = open(filename, "r")
+    return [float(l[:-1]) for l in f]
+
+
+steps = "steps"
+results[mpp][steps] = parse_imbalance_scores(
+    "finalResults/better_balanced_directed_lightning_network_fees_3_5000_mpprebalancing_operations_imbascores_per_rebalance")
+results[cycle4][steps] = parse_imbalance_scores(
+    "finalResults/better_balanced_directed_lightning_network_fees_3_5000_strictrebalancing_operations_imbascores_per_rebalance")
+results[cycle5][steps] = parse_imbalance_scores(
+    "finalResults/better_balanced_directed_lightning_network_fees_4_5000_rebalancing_operations_imbascores_per_rebalance")
+results[foaf][steps] = parse_imbalance_scores(
+    "finalResults/fullExperimentNonStrictRebalancing/better_balanced_directed_lightning_network_fees_3_5000_rebalancing_operations_imbascores_per_rebalance")
+
+for key in keys:
+    plt.plot(results[key][steps], label=key, linewidth=3)
+plt.title("Network imbalance over time (successfull rebalancing operations)")
+plt.xlabel("Number of successfull rebalancing operations (logarithmic)")
+plt.ylabel("Network imbalance (G)")
+plt.xscale("log")
+plt.xlim(100, 10000000)
+plt.grid()
+plt.legend(loc="upper right")
+plt.savefig("fig/imba_vs_steps.png")
+plt.close()
+
 exit()
 
 f = open("finalResults/fullExperimentNonStrictRebalancing/better_balanced_directed_lightning_network_fees_3_5000_fees", "r")
