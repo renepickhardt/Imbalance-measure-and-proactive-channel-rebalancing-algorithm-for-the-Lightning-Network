@@ -140,59 +140,6 @@ As we lack knowledge about the global network state, we cannot apply standard op
 We suggest to use an agent based heuristic in which every participant executes some operations to improve its own balance which others support if it also improves their balance.
 In the following subsection we describe a short example using the newly defined terminology. In the subsequent subsection we describe our rebalancing algorithm.
 
-
-\subsection{Example}
-\label{sec:example}
-
-\begin{figure}
- \centering
- \includegraphics[width=8cm]{img/evenUnbalanced.png}
- \caption{A, B and C all own 100 satoshi.}
- \label{fig:evenUnbalanced}
-\end{figure}
-
-\cref{fig:evenUnbalanced} depicts a small network consisting of $3$ nodes in which the balances are distributed unevenly.
-The balance coefficient for every node is $\nu_u=0.5$.
-The $\zeta$ values for each node are $0$ for the channel in which the node owns no funds and $1$ for the channel in which the node owns all the funds.
-This leads to a imbalance for every node of $0.5$.
-Thus the imbalance of the network $G$ is $0.5$.
-
-\begin{figure}
- \centering
- \includegraphics[width=8cm]{img/evenBalanced.png}
- \caption{Each node still owns 100 satoshi but distributed evenly balanced amonth their channels}
- \label{fig:evenBalanced}
-\end{figure}
-
-\cref{fig:evenBalanced} depicts a balanced view of this network.
-The total funds $\tau_u$ stayed constant.
-However, since the funds have been rebalanced the local balance coefficients $\zeta$ of every channel now take the value of $0.5$ leading to a local imbalance coefficient $G_u=0$ for every node $u\in N$.
-This in turn leads to a perfectly balanced network with $G=0$.
-
-Considering multi path payments in both cases of the network every node was able to pay the full funds they owned to every other participant.
-If the edge $e=(A,B)$ was removed in the balanced network $A$ would still be able to pay $B$ with a path over $C$.
-This would not be possible in the unbalanced network as the funds where distributed poorly.
-It is worthwhile to mention that not every network can achieve a perfect global balance $G=0$.
-
-\begin{figure}
- \centering
- \includegraphics[width=8cm]{img/oddUnbalanced.png}
- \caption{Example of an unbalanced network that does not allow for perfect balance as funds are not distributed evenly.}
- \label{fig:oddUnbalanced}
-\end{figure}
-
-For example, \cref{fig:oddUnbalanced} depicts a case where perfect balance, with $G$ equal to $0$  is not possible. 
-This is due to the fact that the funds are not distributed evenly among nodes -- node $D$ owns twice as many funds as the others.
-
-\begin{figure}
- \centering
- \includegraphics[width=8cm]{img/oddBalanced.png}
- \caption{Best possible balance in a network for which the funds are not distributed equally.}
- \label{fig:oddBalanced}
-\end{figure}
-
-
-
 \subsection{Description of the rebalancing algorithm}
 \label{sec:Algorithm}
 
@@ -358,50 +305,48 @@ In particular this becomes obvious when we remember that way more rebalancing op
 
 \begin{figure}
  \centering
- \includegraphics[width=8cm]{code/results/routabilityTest/paymentamtUnbalanced.png}
- \caption{The initial distribution of maximum payment amounts that are possible to be paid on the first routing attempt between all pairs of nodes in the network.}
- \label{fig:paymentUnbalanced}
+ \includegraphics[width=8cm]{code/vs/fig/maximum_payable_amount_all_pair_chepest_paths_balanced_network.png}
+ \caption{The maximal payable amounts on all pairs of cheapest paths on the initial imbalanced network and on the network after applying the friend of a friend rebalancing strategy.}
+ \label{fig:cdf_paymentsize}
 \end{figure}
+We look a little bit close at the datapoint of the most balanced network with the friend of a friend strategy and compare it to the imbalanced network in figure \cref{fig:cdf_paymentsize}.
+On the cumulative distribution function we can see that in the imbalanced network almost $90\%$ of the paths are not able to forward a single satoshi.
+This number drops below $10\%$ for the balanced network.
+The median of the balanced network takes a value of $50000$ satoshi ($0.5$ mBTC) which at the time of writing is worth about $3$ USD.
+This shows that in a balanced lightning network $50\%$ of payment pairs are able to make micro payments of up to $3$ USD on the first attempt. 
+
+
+For the friend of friend network we have also plotted the final distribution of Gini coefficients in figure \cref{fig:final_gini}. 
+\begin{figure}
+ \centering
+ \includegraphics[width=8cm]{code/vs/fig/Final_ginis_after_rebalancing.png}
+ \caption{The distribution of Gini coefficients for each node over its distribution of channel balance coefficients $\zeta$ of the network after aplying the foaf rebalancing strategy.}
+ \label{fig:final_gini}
+\end{figure}
+As the comparison with figure \cref{fig:initial_ginis} is a little bit tricky we provide the cumulative distribution function of both distributions with a smaller bin size in figure \cref{fig:cdf_gini}
 
 \begin{figure}
  \centering
- \includegraphics[width=8cm]{code/results/routabilityTest/paymentamtBalanced.png}
- \caption{The final distribution of maximum payment amounts that are possible to be paid on the first routing attempt between all pairs of nodes in the network after the balance improving algorithm has converged into a local minimum.}
- \label{fig:paymentBalanced}
-\end{figure}
+ \includegraphics[width=8cm]{code/vs/fig/comparison distribution of Ginicoefficients.png}
+ \caption{Coparing the distribution of the node's Gini coefficients before and afte rebalancing with the friend of a friend strategy.}
+ \label{fig:cdf_gini}
+ \end{figure}
+ The Kolmogorov Smirnoff distance which is defined as the maximum pointwise difference of the cumulative distribution functions takes a value of $0.74$.
+ This shows the statistical significance of the rebalancing heuristic in comparison to staying with the imbalanced network..
+ We can see that the median value of the Ginicoefficients in the best balanced network that we could aquire is about $0.15$.
+ In comparison on the imbalanced network the median Gini coefficient takes the value of $0.5$.
 
-To demonstrate that the median actually makes sense we depict 
-the distribution of possible payment amounts between all pairs
-of nodes on the unbalanced network which we used as an input for 
-the algorithm in \cref{fig:paymentUnbalanced} and also the distribution of possible. 
-The payment amounts on the balanced network after the algorithm has been executed 
-successfully in \cref{fig:paymentBalanced}.
-
-Finally, we have tested, from a statistical point of view, the validity of computing the balance as the average of the local balance coefficients.
-To test that, we verified if the local balance coefficients $\nu_u$ for all $u \in N$ follow a normal distribution. This has been successfully confirmed with the D'Agostino normallity test~ß\cite{d1971omnibus}.
-This test achieved a p-value of $0.027$ on the balanced network.
-One can see in \cref{fig:giniStart} and \cref{fig:giniEnd} how the distribution of local balance coefficients looks before and after rebalancing the network. We can see that, on average, the mean of the distribution is being decreased. This is to be expected. 
-
-\begin{figure}
+ As a last experiment we tracked the routing fees that nodes would have to pay for their rebalancing operations and that the would earn while they are participating in the rebalancing operation of other nodes.
+ \begin{figure}
  \centering
- \includegraphics[width=7cm]{code/results/routabilityTest/1574847007_ginicoefficients_start.png}
- \caption{The distribution of Gini-coefficients (local balance coefficients) in the unbalanced random network before the simulation started.}
- \label{fig:giniStart}
-\end{figure}ß
-\begin{figure}
- \centering
- \includegraphics[width=7cm]{code/results/routabilityTest/1574847007_ginicoefficients_end.png}
- \caption{Distribution of Gini-coefficients (local balance coefficients) for all nodes in the random network after the balance improvement algorithm successfully executed.}
- \label{fig:giniEnd}
-\end{figure}
-
-
-%show (compute!) histograph of the unbalanced and balanced network of payment amounts to make more sense of the median measure
-% actually it would be nice to do a kolmogorov smirnof test on distributions by comparing the L_1 norm of the CDFs
-
-
-
-
+ \includegraphics[width=8cm]{code/vs/fig/distribution_of_fees.png}
+ \caption{Coparing the distribution of the node's Gini coefficients before and afte rebalancing with the friend of a friend strategy. Negative fees mean that the node paid more fees than it earned}
+ \label{fig:fees}
+ \end{figure}
+ Figure \cref{fig:fees} shows that the overall fees are normally distributed around $0$.
+ This means that the expected value of fees that need to be paid or are being earned if all nodes participate in proactive rebalancing is $0$.
+An expected value of $0$ is a strong indicator that fees should not play a role for rebalancing operations if those are beneficial for every node that is designated to take part in the rebalancing operation.
+ \footnote{Note that we zoomed heavily in as only $50\%$ of the nodes have been depicted in this view as the variance is rather large.}
 % =======================================================================
 \section{Discussion}
 \label{sec:conclusion}
@@ -454,42 +399,6 @@ instead of using balance as the measure of network health.
 \section{Acknowledgements}
 \label{sec:ack}
 We thank Stefan Richter for helpful comments on early drafts of this work.
-
-\subsection{remove text?}
-Rebalancing might worsen the balance of another node along the path in such a way as not actually contributing to improve the global network balance. 
-It would be desirable to isolate the rebalancing operations and contrast them to the normal payment operations. 
-It would have two benefits:
-\begin{enumerate} 
-  \item Each node would decide if the rebalancing benefits them or not, and only agree to participate when the operation would be neutral or beneficial locally to that node. 
-  \item The rebalancing payments, if done as normal payments, would incur payment fees. 
-  This would economically disincentivice the nodes in participating in initiating the algorithms. 
-  If the rebalancing is treated as {\em special case payments} without fees, 
-  this might improve the participation and the overall balance of the network. 
-\end{enumerate}
-
-We will elaborate on this scheme more in the following section.
-
-
-
-\subsubsection{Adoptions to the communication protocol}
-\label{sec:lnchanges}
-
-The idea of cost-free rebalancing in the friend of a friend network was first proposed in the context of JIT-Routing~\cite{pickhardt2019jit}.
-In order to calculate a circular path node $u$ will query $v$ for the channels on which $v$ would be willing to forward the amount $a$ in a circular way.
-$v$ will only return channels potentially with a lower amount than $x$ on which it would also improve its local imbalance $G_{v}$.
-In the same way $u$ will ask the nodes which channels it would like to receive the funds on in a circular way to improve their balance.
-Both queries will allow the nodes to signal that they will be willing to participate in a rebalancing operation for the amount up to $x$.
-After the node $u$ has acquired this subset of channels in its friend of a friend network it searches for a path from $v$ to $u$.
-This path will be preceded with the first hop from $u$ to $v$ making it a circular payment.
-The amount sent on this circular payment route will be the highest possible value up to $x$.
-It is expected that there will be no routing fees for this circular path as it will improve the balance of each node and provide a direct benefit to all of them.
-
-From a privacy point of view, revealing channels on which a node is willing to participate in a rebalance operation to its neighbors does not directly leak more information than could be known anyway because the channel state is known to channel participants.
-Also nodes do not have to answer to the queries truthfully and could always introduce some level of fuzziness for privacy reasons. 
-While we suggest that channel partners share some information with each other this is not necessary for the algorithm to work.
-A node can probe for rebalancing circles that are beneficial for itself, 
-and the intermediate nodes would only fulfill the fee-free rebalancing request if the operation also improves their balance. 
-Thus, this algorithm could work without actively sharing information in the friend of a friend network.
 
 
 \bibliography{lightningNetworkHealth}
