@@ -233,13 +233,13 @@ This had to be done as the gossip protocol also does not propagate any informati
  \caption{The histogram shows the distribution of relative funds $\nu_v$ for each node $v\in G$.}
  \label{fig:initial_funds}
 \end{figure}
-From figure \ref{fig:initial_funds} we can see the result of our random process of allocating funds to the nodes.
+From figure \cref{fig:initial_funds} we can see the result of our random process of allocating funds to the nodes.
 
 After we randomly chose the funder of each channel we computed the largest strongly connected component.
 This mainly removed nodes which only have one channel or due to our random process had opened all channels or have been receiving all channels from others.
 all of these nodes could not take place in any rebalancing operation anyway.
 The strongly connected component consists of $2707$ nodes and $24161$ edges.
-The diameter of the strongly connected component had a value of 10 and the cumulative distance distribution of shortest paths between all pairs can be seen in figure \ref{fig:cumulative_distance}
+The diameter of the strongly connected component had a value of 10 and the cumulative distance distribution of shortest paths between all pairs can be seen in figure \cref{fig:cumulative_distance}
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{code/vs/fig/cummulative_distance_distribution_lin_scale.png}
@@ -260,7 +260,7 @@ This is particularly true for the rebalancing in the friend of a friend network.
  \caption{The distribution of Gini coefficients for each node over its distribution of channel balance coefficients $\zeta$ of the input network before any rebalancing experiment was taking place.}
  \label{fig:initial_ginis}
 \end{figure}
-Figure \ref{fig:initial_ginis} depicts the initial distribution of Ginicoefficients for each node of the examined network.
+Figure \cref{fig:initial_ginis} depicts the initial distribution of Ginicoefficients for each node of the examined network.
 This plot also reflects the random nature of the allocated funds already resulting in an average value as the total network imbalance very close to $0.5$.
 
 In order to conduct the experiments we simulated the proposed algorithm and strategies in the following way.
@@ -291,55 +291,70 @@ However, in the simulation the path finding operations limit the experiments to 
 
 \begin{figure}
  \centering
- \includegraphics[width=7cm]{code/results/routabilityTest/1574847007_figure.png}
- \caption{Balance evolving with execution of the algorithm on a network with 101 nodes and 1788 edges. The edges have been initialised with uniformly distributed capacities between $1000$ and $10000$ satoshi. Ihe full capacity is initially with the founder of the channel.}
- \label{fig:healthovertime}
+ \includegraphics[width=7cm]{code/vs/fig/imba_vs_steps.png}
+ \caption{Comparing how the imbalance score of the network behaves with the amount of successfull rebalancing operations. As the rebalancing amounts are much smaller with multi path payments the x-axis has a logarithmic scale.}
+ \label{fig:imbalancehovertime}
 \end{figure}
 
-\cref{fig:healthovertime} confirms that the balance score of the network is decreasing over time when running our simulation.
+\cref{fig:imbalancehovertime} confirms that the balance score of the network is decreasing over time when running our simulation.
 This means that the network is becoming more balanced.
-We see that most improvement is happening quite fast with a few simulation steps.
-On average, each node had attempted to rebalance at least $n$ times, where $n$ is the count of the node's payment channels.
-This seams plausible in the sense that every channel gets rebalanced at least once.\footnote{Note, that due to the collaborative behaviour of nodes a node also gets channel rebalanced in the rebalancing attempts of other nodes.} 
+We see that most improvement is happening quite fast with $10$k to $100$k rebalancing being necessary.
+This is not more than $37$ rebalancing operations per node.
+Taking into account that the average node degree is $9$ this means that each node needs up to $4$ rebalancing operations per channel.  
+This seams plausible in the sense that every channel gets rebalanced at least once.\footnote{Note, that due to the collaborative behaviour of nodes a node also gets channel rebalanced in the rebalancing attempts of other nodes.}
+The only difference is the multipath rebalancing.
+This makes actully a lot of sense as we only rebalanced for a $20^{th}$ of the possible amount in the multipath case since we wanted to have multiple other paths to rebalance that particular channel.
 In particular the algorithm converges in a local minimum rather quickly.
 Note, that the established minimum is a local minimum. 
-Our experimental runs resulted in states that are not identical, however, the differences were negligible. 
+Our experimental runs resulted in states that are not identical when we shuffled the order of cycles that we probed, however, the differences were negligible. 
 We can therefore assume that the local minimum might be close to global minimum as the collected data demonstrate.
 
 \begin{figure}
  \centering
- \includegraphics[width=8cm]{code/results/routabilityTest/health vs payment rate.png}
- \caption{For every step of the simulation the balance of the network is plotted against the probability for a random payment of the smallest possible amount to fail.}
- \label{fig:healthVsFailurerate}
+ \includegraphics[width=8cm]{code/vs/fig/imba_vs_success_rates.png}
+ \caption{Every time the network helth reached a new low to a two digit decimal we computed the probability for a random payment of the smallest possible amount to fail on the cheapest path.}
+ \label{fig:imba_vs_success}
 \end{figure}
 
-In \cref{fig:healthVsFailurerate} we compare our defined balance score with the failure rate of payments.
-We can see that better balance scores (lower imbalance score $G$) yield a lower failure rate for payments.
-The failure rate is measured by attempting a payment between all pairs of nodes and counting the relative amount of payments that cannot be routed on the first selected path from the payment channel network.
-We calculate the failure rate and the balance score after every simulation step and plot the points as a scatter plot.
-This result confirms the dependency of the payment failure and the worse balance indicator. It is the first experiment that indicates that the defined balance score is semantically correct and well chosen. 
+In \cref{fig:imba_vs_success} we compare the imbalance score with the success rate of payments.
+We can see that better balance scores (lower imbalance score $G$) yield a higher success rate for payments as expected.
+The success rate is measured by attempting a payment between all pairs of nodes and counting the relative amount of payments that routed successfully on the cheapest path from the source to the destination through the network.
+We computed the success rate of every time the balance score hits a new score rounded to two decimals.
+This result confirms the dependency of the payment failure and the worse balance indicator. It is the first experiment that indicates that the defined imbalance score is semantically correct and well chosen. 
+Again the multipath payment strategy sticks out as it achieves a rather high success rate while the network is still rather imbalanced.
+However this is a little bit missleading for the following reasons.
+A successrate of $80\%$ is reached for an imbalance score of $0.43$.
+Comparing this back with figure \cref{fig:imbalancehovertime} we see that about $250$k rebalance operations are necessary to achieve this success rate.
+Even the worst performing algorithm achieves this success rate with far less than $100$k rebalancing operations and a much better overall imbalance score. 
 
-The goal of the second experiment is to check if the overall amounts that can be routed increase with better balance scores (lower imbalance metric $G$).
+This effect - while expected as multipath rebalancing uses smaller amounts -sssssss becomes more visible in the next experiment. 
+The goal of the next experiment is to check if the overall amounts that can be routed increase with better balance scores (lower imbalance metric $G$).
 
 \begin{figure}
  \centering
- \includegraphics[width=8cm]{code/results/routabilityTest/health vs payment amt.png}
- \caption{For every step of the simulation the balance of the network is plotted against the median value of payments that can be fulfilled. 
- Note that failed payments are part of the statistics and counted as payments which can send $0$ satoshi.}
- \label{fig:healthVsPayment}
+ \includegraphics[width=8cm]{code/vs/fig/imba_vs_median_payment_size.png}
+ \caption{The imbalance of the network is plotted against the median value of payments that can be fulfilled betwen all pairs of nodes on the first attempt along the cheapest path. Note that failed payments are part of the statistics and counted as payments which can send $0$ satoshi.}
+ \label{fig:imba_vs_payment_size}
 \end{figure}
 
-In \cref{fig:healthVsPayment} we compare the balance score with the median payment amount.
+In \cref{fig:imba_vs_payment_size} we compare the imbalance of the network with the median payment amount.
 The median payment amount is computed as follows.
-First all pair of shortest paths are computed.
+First all pair of shortest paths (on the base fee graph) are computed.
 We then look at the amount that could actually be forwarded through each path.
 Finally we take the median of those amounts.
 This means that at least $50\%$ of payment pairs are able to forward this amount.
-The higher this amount is the higher payments are supported by the network.
-We see a nice negative correlation between the balance score and the median routable payment amount.
+The higher this amount is the higher arbitrary payments are supported by the network.
+Again we see that the more balanced the network is (lower imbalance score) the higher the median payment size.
 This suggests that a more balanced network is statistically able to route higher payment amounts on the first try.
-This is particularly important as privacy aware payment channel networks use source based onion routing and technically have to guess a path. When those initially guessed paths provide a low failure rate with high payment amounts there are considerable benefits for the overall functioning of the payment network. 
-The user experience is improved, the payment delays are lowered, and the amount of messaging and coordination is minimised. 
+This is particularly important as privacy aware payment channel networks use source based onion routing and technically have to guess a path.
+When those initially guessed paths provide a high rate with high payment amounts there are considerable benefits for the overall functioning of the payment channel network. 
+The user experience is improved, the payment delays are lowered, and the amount of messaging and coordination is minimised.
+
+We note that the rebalancing along cycles in which each hop has to improve the $\zeta$ values of each participants (cycles of length $4$ and $5$) are monotonic in this diagram.
+Strategies that allow cycls in which the last hop worsens the $\zeta$ value of the node who initiates the rebalancing are not monotonic.
+This is the case for our implementation of multipath payments and friend of a friend rebalancing.
+One can also see that mpp is not behaving best with respect to the median payment size.
+In particular this becomes obvious when we remember that way more rebalancing operations have been necessary in the multipath rebalancing case.
 
 \begin{figure}
  \centering
@@ -390,20 +405,26 @@ One can see in \cref{fig:giniStart} and \cref{fig:giniEnd} how the distribution 
 % =======================================================================
 \section{Discussion}
 \label{sec:conclusion}
-
-Our experiments support the assumption that payments along an arbitrary or randomly chosen path have a higher success rate if the network is balanced. 
-In other words, we empirically verified that the overall ability of network participants to route payments on random paths is improved in a balanced network. 
+We empirically verified that the overall ability of network participants to route payments on random paths is improved in a balanced network. 
 As privacy aware payment channel networks use source-based pathfinding without knowing the constraints of the channels along an attempted path, the likelihood of conducting a successful payment with few attempts becomes considerably higher in a balanced network.
 Our results show that nodes do not need to strive for $\nu_u = 0.5$ and perfect local balance of their channels in order to produce high success rate of random payments.
 It is sufficient for the overall network to be balanced if every node tries to optimize their channel balance coefficients be almost equal. 
 This can be achieved by optimizing for a low Gini coefficient of the channel balance coefficients by making circular rebalancing payments.
-We have analyzed that the definition of the network imbalance metric as the average of the nodes imbalance metrics is statistically well defined on our test data.
 
-In a similar way as Internet routers collaboratively solve the path finding problem by exchanging routing tables, we furthermore suggest for the network to work collaboratively towards achieving a good balance by locally sharing routing hints and allowing for fee-free rebalancing operations if everyone along the path benefits from the operation. 
+We have proposed a greedy rebalancing heuristic which we have tested with $4$ particular strategies to select rebalancing cycles.
+We could see that the results of these four strategies do not significanly differ for the overall performance of the network.
+However for practical reasons we propose to stick to rebalancing in the friend of a friend network as this network is usually small and all circles in this subgraph canbe computed efficiently.
+While multipath rebalancing achieves the actual best values on both success rates and median payment size the lead is neglictable and stands in no ratio to the extra amount of rebalancing operations that need to take place.
+
+Finally we empirically showed that the earned and paid fees for rebalancing operations are normally distributed around 0 satoshi suggesting that this is a zero sum game if every node participates in proactive rebalancing.
+Routing fees might discourage nodes from proactively rebalancing as they might hope to earn fees if they wait for others to rebalance their channels.
+This behaviour is refered to as the tragedy of the commons\footnote{c.f. \url{https://en.wikipedia.org/wiki/Tragedy_of_the_commons}} and would be mitigated with a fee free rebalancing protocol.
+To incentivice the participation of the rebalancing it seems reasonable to omit fees for a rebalancing operation.
+
+Thus in a similar way as Internet routers collaboratively solve the path finding problem by exchanging routing tables, we furthermore suggest for the network to work collaboratively towards achieving a good balance by locally sharing routing hints. 
 As balances of channels in the friend of a friend network can easily be probed, it seems plausible in privacy aware payment channel networks to include a communication protocol with which a node signal their partners that it wants to rebalance a certain channel with a certain amount.
 We think that our suggestion for sharing channels need for a rebalancing operation does not reveal more information as can currently be collected with probing attacks.
-
-
+However sharing rebalancing hints gives out perfect information to compute available rebalancing cycles.
 
 % =========================================================================================
 \section{Future Work}
