@@ -256,9 +256,10 @@ def show_lightning_has_some_outlier_high_fees():
             print(base)
 
 
-#n = Network(dataset)
+n = Network(dataset)
 # n.simulate_precomputed_rebalance_operations(experiment_name)
-# exit()
+exit()
+
 
 def parse_stats_results(filename):
     f = open(filename, "r")

@@ -222,35 +222,69 @@ However, this problem is not worse than the current problem of probing paths for
 \section{Experimental Setup}
 \label{sec:setup}
 
-In order to validate the proposed scheme, we have run a simulation of the algorithm in the following way:
-\begin{enumerate}
-\item Assign $C$ as the candidate set of all nodes in the network.
-\item As long as $|C| > 0$ do the following steps.
-\item A random node from $C$ is chosen and it is allowed to do one rebalancing operation to improve its balance executing the steps discussed in \cref{sec:Algorithm}.
-\item If the node was successful go back to step $1$.
-\item If the node could not improve its balance remove the node from $C$ and go to step $3$.
-\end{enumerate}
+We conducted our experiment on a snapshot of the public Lightning Network from October 2019.
+That network view was retrieved from the gossip store of our lightning node which is accassible at \url{https://ln.rene-pickhardt.de}.
+The distribution of funds in the Lightning Network is not a public information and had to be guessd in the following way.
+As channels are currently almost always opened by one side\footnote{Dual funded channels are not part of the protocol and no implemention is merged to any of the standard nodes} we randomly guessed who opened the channel by a coinflip and allocated the entire channel capacity to the node that was chosen by the coinflip. 
+This had to be done as the gossip protocol also does not propagate any information about who is opening the protocol.
+\begin{figure}
+ \centering
+ \includegraphics[width=8cm]{code/vs/fig/distribution_of_nus.png}
+ \caption{The histogram shows the distribution of relative funds $\nu_v$ for each node $v\in G$.}
+ \label{fig:initial_funds}
+\end{figure}
+From figure \ref{fig:initial_funds} we can see the result of our random process of allocating funds to the nodes.
 
-After each step we track all channel balance coefficients, local balance of nodes and the balance of the network.
+After we randomly chose the funder of each channel we computed the largest strongly connected component.
+This mainly removed nodes which only have one channel or due to our random process had opened all channels or have been receiving all channels from others.
+all of these nodes could not take place in any rebalancing operation anyway.
+The strongly connected component consists of $2707$ nodes and $24161$ edges.
+The diameter of the strongly connected component had a value of 10 and the cumulative distance distribution of shortest paths between all pairs can be seen in figure \ref{fig:cumulative_distance}
+\begin{figure}
+ \centering
+ \includegraphics[width=8cm]{code/vs/fig/cummulative_distance_distribution_lin_scale.png}
+ \caption{Probability mass of pathlengths of shortest paths between all pairs of nodes. As this is computed on the strongly connected component there will always be a path between each pair of nodes}
+ \label{fig:cumulative_distance}
+\end{figure}
+Note that the notion of shortest paths with respect to fees is depending on the amount that is being transfered as the fees on channels have a fixed base fee and a variable fee rate.
+For the computation of shortest paths we have assumed a fixed payment size and essentially computed the shortest paths by only respecting the fixed base fee.
 
-Computing the rebalancing circles is the most expensive operation, due to the fact that it requires solving the shortest path problem.
+It is interesting to note that about $40\%$ of pahts have 5 or more hops.
+This means that a shortest rebalancing cycle would have at least 6 hops.
+This demonstrates that the single rebalancing operations which we conducted where no covering the entire network but only taking place within local parts of the network.
+This is particularly true for the rebalancing in the friend of a friend network.
+
+\begin{figure}
+ \centering
+ \includegraphics[width=8cm]{code/vs/fig/initial_ginis_before_rebalancing.png}
+ \caption{The distribution of Gini coefficients for each node over its distribution of channel balance coefficients $\zeta$ of the input network before any rebalancing experiment was taking place.}
+ \label{fig:initial_ginis}
+\end{figure}
+Figure \ref{fig:initial_ginis} depicts the initial distribution of Ginicoefficients for each node of the examined network.
+This plot also reflects the random nature of the allocated funds already resulting in an average value as the total network imbalance very close to $0.5$.
+
+In order to conduct the experiments we simulated the proposed algorithm and strategies in the following way.
+For each channel we computed up to 5000 rebalancing cycles which included this channel.
+These cycles followed the properties defined by the strategy (for example fixing the maximal length).
+The number $5000$ was chosen to be as large as possible so that we where able to conduct the simulation within the $16$ GB of main memory of our machine.
+In most cases \footnote{we didn't count them} there where less than $5000$ cycles available.
+However sometimes we had to cut off the precomputed cycles as the hard cap of $5000$ was hit.
+
+For each cycle we checked if a rebalancing was possible without having nodes on the path worsening their channel balance coefficients.
+As this assumption is very strong the vast majority in rebalancing attempts along a cycle would fail or only work with an amount smaller than the one proposed by the initiator. 
+In particular for the multipath payments we did not rebalance the entire possible amount but just a $20^{th}$ of it.
+Also we allowed in the foaf rebalancing and multipath rebalancing that the node who initiated the rebalancing could also worsen the situation for its final channel.\footnote{This effectively means that we did not have to compute all cycles in the foaf network but where able to build symmetric differences of a cycle base.}
+This also explains why the final results for these two strategies are not entirely monotonic but oscillating a bit.
+
+\textbf{REWRITE? MOVE TO DISCUSSION?} Computing the rebalancing circles is the most expensive operation, due to the fact that it requires solving the shortest path problem.
 If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a node as the shortest paths only need to be computed in a subset of the friend of a friend network.
 This is typically small enough to have substantial performance overheads. 
 In a real payment channel network this computation would only have to be conducted 
 if the distribution of channel balance coefficients becomes too uneven,
 which is easily monitored after every payment or routing attempt without performance overhead.
-However, in the simulation the path finding operations limit the experiments to rather small test networks.
-We conducted our experiments on 3 graphs.
-First, as a proof-of-concept, a random network with $101$ nodes and $1788$ edges was used.
-Second, in order to have a larger network diameter, a random network with $1000$ nodes and $FILLOUT$ edges.
-The capacity of nodes in these random networks are assigned a random value between $1000$ and $10000$ drawn from a uniform distribution.
-Both random networks used the Erdos Renyi random network generator.
-Finally, to make a more realistic experiment, a real-world older Bitcoin Lightning Network snapshot was used. 
-This formed a strongly connected component to have a realistic network of $816$ and $7110$ edges.
-The diameter of this network was 5 with the over a third of all paths needing 4 or more hops.
-In all three networks we assumed an initial distribution of the balances as the total capacity on one side of the channel.
+However, in the simulation the path finding operations limit the experiments to rather small tests and also prevents us from conducting experiments on simulated large scale payment channel networks with millions of nodes / channels.
 
-
+ 
 % ==========================================================
 \section{Results}
 \label{sec:results}
