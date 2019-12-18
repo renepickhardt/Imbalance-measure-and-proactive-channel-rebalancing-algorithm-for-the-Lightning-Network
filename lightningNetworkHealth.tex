@@ -22,14 +22,16 @@
 \twocolumn[\maketitle 
 \hrule 
 \begin{abstract}
-  Making a payment in privacy aware payment channel networks is currently achieved by trying several payment paths until one succeeds which can yield to several minutes for a payment to complete.
-  We introduce a network imbalance measure and provide empirical evidence that a better balance of the network leads to higher a success rate when making random payments.
-  We formulate the optimization problem of improving the balance of the network as a sequence of rebalancing operations of the funds within the channels along circular paths within the network.
-  As the funds and balances of channels are not globally known we introduce a greedy heuristic with which every node despite the uncertainty can improve its own local balance.
-  Since the balance of the network is defined as the average of the balance of all the participating nodes, the network balance will be improved if any participant improves its own balance. 
-  We also suggest to allow channel partners to share information with each other and engage in fee-free rebalancing operations if that operation is beneficial for the balance of every participant along the rebalancing circle.
-  In this way participants will only be able to improve their balance if this operation does not worsen the balance of other nodes. This ensures that the heuristic will always improve the balance of the network.
-  We show empirically on synthetic random networks that the balance measure is well defined and that our algorithm quickly converges to a balanced enough network that supports random payments without failures.
+Making a payment in privacy aware payment channel networks is currently achieved by trying several payment paths until one succeeds which can yield to several minutes for a payment to complete.
+We introduce a network imbalance measure and formulate the optimization problem of improving the balance of the network as a sequence of rebalancing operations of the funds within the channels along circular paths within the network.
+As the funds and balances of channels are not globally known we introduce a greedy heuristic with which every node despite the uncertainty can improve its own local balance.
+In an empirical evaluation on a recent snapshot of the Lightning Network we show that the imbalance distribution of the network has a Kolmogorov Smirnoff distance of 0.74 to the imbalance distribution after the heuristic is applied.
+We further show that the success rate of a tiny payment increases from $11.2\%$ on the imbalanced network to $98.3\%$ in the balanced network.
+ Similarly the median possible payment size accross all pairs of participants increases from $0$ to $0.5$ mBTC for initial routing attempts on the cheapest possible path.
+We provide emperical and game theoretic evidence that routing fees should be dropped for proactive rebalancing operations.
+We conducted 4 different strategies for selecting rebalancing cycles which lead to similar results indicating that a collaborative approach within the friend of the friend network might be preferable from a practical point of view. 
+  
+
 \end{abstract}
 
 \begin{keywords}
@@ -51,31 +53,34 @@ While the lightning network for example shares the capacity of public channels w
 First this would compromise the privacy as one could collect all changes of the channel balances and reconstruct the flow of payments.
 Second propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technologies and other broadcast networks.
 The decision to use source base routing together with the unknown channel balances of the network results in a challenge for finding a path of payment channels so that all channels along the path have enough liquidity to be able to forward an attempted payment.
-Currently this challenge is met by probing paths until one such path is found.
-It has been shown that probing for paths can take more than 3 minutes in more than $5\%$ of the attempted payments \cite{decker2019lnconf} which leads to a poor user experience.
+Currently this challenge is met by probing paths with a brute force approach until one such path is found.
+It has been shown that probing for paths can take more than 3 minutes for more than $5\%$ of the attempted payments \cite{decker2019lnconf} which leads to a poor user experience.
 Imagine a grocery store in which for every $20^{th}$ customer the cash register would have to wait three minutes until the payment was received.
 
 In this paper we examine the consequences of nodes proactively and collaboratively distributing their funds evenly across their channels.
 We introduce the notation of an imbalanced network.
 The imbalance is measured as the average of the imbalance scores of its nodes.
-The node's imbalance of payment channels as the gini coefficient of a node's channel balance coefficients which are the relative amount of funds a node owns in a channel in comparison to the capacity of that channel.
+The node's imbalance of payment channels i defined as the gini coefficient of a node's channel balance coefficients which are the relative amount of funds a node owns in a channel in comparison to the capacity of that channel.
 In particular nodes already have all the information they need to compute their imbalance. 
-Nodes can reduce their imbalance either alone or collaboratively with the help of its channel partners by conducting circular payments which is also known as rebalancing.
+Nodes can reduce their imbalance either alone or collaboratively with the help of their channel partners by conducting circular payments which is also known as rebalancing.
 Another option is by using a submarine swap\footnote{\url{https://github.com/submarineswaps/swaps-service}} as an off-chain / on-chain swapping service.
 
 We formulate an optimization problem of finding a sequence of rebalance operation that minimizes the network's imbalance.
 As the information necessary to solve the optimization problem is not publically known in privacy aware payment channel networks we provide a greedy privacy aware agent based heuristic for its participants to find a minimum for the problem. 
-In an empirical study we show that the greedy heuristic will lead to a $100\%$ success rate for an arbitrary payment to succeed.
-We show that this is always the case if the balance of the network is good enough meaning that the imbalance score is low enough.
-In particular we see that participants do not have to follow a strategy of having as much inbound capacity as outbound capacity for this algorithm to work. 
+In an empirical study we show that the greedy heuristic will lead to a success rate of almost $100\%$ for a small payment between two arbitrary selected nodes.
+Also the median possible payment size between all pairs of nodes increases from $0$ in the imbalanced network to $0.5$ mBTC in the best balanced networks that we found.
 
-While single nodes can already execute the algorithm in currently existing payment channel networks they are economically disincentivized to do so.
-We thus discuss the possability of introducing fee free rebalancing and for the sake of speed we suggest that nodes share with their neighbors on which local channels they would like to have inbound or outbound capacity. 
+While single nodes can already execute the algorithm in currently existing payment channel networks they have to pay routing fees for rebalancing operations.
+Thus economically they are disincentivized to do so.
+We compared the earned fees for being participant of another nodes rebalancing attempt and the paid fees for initiating rebalancing operations.
+Showing that these numbers are normally distributed around $0$ we propose to omit fees for proactive rebalancing operations to incentivice nodes to execute our algorithm which seems to be benefitial for the entire network. 
+Looking at different strategies of finding rebalancing cycles that the algorithm uses we suggest for the sake of speed that nodes share with their neighbors on which local channels they would like to have inbound or outbound capacity.
+This information could easily be probed anyway and seems not to worsen the privacy of nodes.
 
 The remainder of this paper is organized as follows: In section \cref{sec:relatedWork} we give a short overview of related work in this field.
-We then introduce the notation and definition of the imbalance score in section \cref{sec:formalization}.
-After we show a small example of our definitions in section \cref{sec:example} we formulate the optimization problem to reduce the imbalance and propose a greedy, agent based and collaborative algorithm in \ref{sec:Algorithm} to address the optimization problem.
-To improve the computational overhead of the algorithm we propose a few changes to the lightning network protocol in section \ref{sec:lnchanges}.
+We then introduce the notation and definition of the imbalance score in section \cref{sec:formalization} and formulate the optimization problem to reduce the imbalance.
+We propose a greedy, agent based and collaborative algorithm in \ref{sec:Algorithm} to address the optimization problem.
+We also propose different strategies for the algorithm to probe for potential rebalancing cycles.
 In \cref{sec:setup} we introduce the experimental setup and the data set that we used.
 After showing our empirical results in \cref{sec:results} we discuss the results and propose some future work in the last two sections.
 
@@ -89,9 +94,6 @@ While the Lightning Network White paper~\cite{poon2016bitcoin} does not discuss 
 There is already research being conducted in the field of rebalancing channels~\cite{khalil2017revive} which was more about the cryptographic protocols used to make sure that participants can enforcethe rebalancing that was agreed upon.
 There are rebalancing operations for c-lightning\footnote{\url{https://github.com/lightningd/plugins/tree/master/rebalance}} and for lnd\footnote{\url{https://github.com/bitromortac/lndmanage}}.
 In particular the idea of Just in time rebalancing while fulfilling routing requests~\cite{pickhardt2019jit} is already being implemented as JIT-routing for c-lightning\footnote{\url{https://github.com/lightningd/plugins/pull/66}}. 
-
-\textbf{TODO:} Add statistical papers of the lightning network. Payment reliability and path finding methods (similar to PhD Proposal)
-
 
 % ===========================================================================
 \section{Formalization and Assumptions}
@@ -371,6 +373,8 @@ As balances of channels in the friend of a friend network can easily be probed, 
 We think that our suggestion for sharing channels need for a rebalancing operation does not reveal more information as can currently be collected with probing attacks.
 However sharing rebalancing hints gives out perfect information to compute available rebalancing cycles.
 
+\textbf{todo: see if stays in an where}
+In particular we see that participants do not have to follow a strategy of having as much inbound capacity as outbound capacity for this algorithm to work. 
 % =========================================================================================
 \section{Future Work}
 \label{sec:future}
