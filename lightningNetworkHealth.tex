@@ -98,27 +98,28 @@ In particular the idea of Just in time rebalancing while fulfilling routing requ
 \section{Formalization and Assumptions}
 \label{sec:formalization}
 
-Let $G=(V,E,c)$ be a privacy aware payment channel network with a finit set of nodes.
+Let $N=(V,E,c)$ be a privacy aware payment channel network with a finit set of nodes.
 The payment channels are the edges in the network such that $E\subset V\times V$.
 Additionally we have a publicly known capacity function $c: E\longrightarrow \mathbb{N}$ that assigns a capacity to every edge of the network.
 For every edge $e=(u,v)$ we denote $e_u:=(e,u)$ as the first participant of the channel and $e_v=(e,v)$ as the second participant.
-Every node can be assigned its set of channels which we encode with the neighbor function $n : V \longrightarrow 2^{E}$.
-Similarly, if we want to denote the set of neighboring nodes we use the function $n_n : V \longrightarrow 2^{V}$.
-Naturally, the capacity of every channel $e=(u,v)$ is privately split into the local balances with the balance function $b: E\times N\longrightarrow\mathbb{N}$ such that $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$.
+Naturally, the capacity of every channel $e=(u,v)$ is privately split into the local balances with the balance function $b: E\times V\longrightarrow\mathbb{N}$ such that $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$.
 
 We define the channel balance coefficient for $u$ on the channel $e=(u,v)$ as  $\zeta_{(u,v)} = \frac{b(e_u)}{c(e)}$.
 This is just the relative amount of funds that the participant $u$ has in the channel $e$.
 Note since $b(e_u)+b(e_v)\stackrel{!}{=}c(e)$ we also have $\zeta_{(u,v)} + \zeta_{(v,u)}=1$.
-in particular we have $\zeta_{(u,v)} \neq \zeta_{(v,u)}$ 
+In general we have $\zeta_{(u,v)} \neq \zeta_{(v,u)}$.
 
-The total funds of a participant $u$ are denoted as $\tau_u:=\displaystyle{\sum_{e\in n(u)}b(e_u)}$.
+The neighbor function $n : V \longrightarrow 2^{E}$ assignes every node a set of all the channels it is part of.
+To make the following formulas easier to read let us introduce the neighborhood $U:=n(u)$.
+
+The total funds of a participant $u$ are denoted as $\tau_u:=\displaystyle{\sum_{e\in U}b(e_u)}$.
 The value of $\tau_u$ is constant while no payments are made and no channels are being opened and closed.
 In contrast the balance function $b$ can vary subject to re-allocation of funds.
-To make the following formulas easier to read let us introduce $U:=n(u)$ which denotes the set of channels which participant $u$ is part of.
 The total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(e)}$.
 Using the last two definitions let us define the node balance coefficient for a participant $u$ as $\nu_u = \frac{\tau_u}{\kappa_u}$.
 
 We call a node $u$ {\bf balanced} if its channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ have the same value.
+This value does by no means have to take a value of $0.5$ though it certainly seems to be a reasonable goal.
 This means that the distribution of a node's relative funds across all its channels is the same.
 Consequently, we consider a node {\bf unbalanced}, if it local channel balance coefficients are unequal.
 Statistically, inequality of a distribution can be measured with the Gini coefficient.
@@ -130,12 +131,12 @@ Note, that the Gini coefficient of a channel balance coefficients of a node $u$ 
 This value will be exactly the same as the node's balance coefficient $\nu_u$.
 Nodes which have channels with large differences in capacities will not be able to get a Gini coefficient of 0 if we used absolute balances for the definition of the $\zeta$ values as in such cases smaller channels might be drained by larger ones during rebalancing operations.
 
-Finally, $G$ denotes the imbalance of the network. $G = \displaystyle{\frac{1}{|N|}\sum_{n\in N}G_n}$. It is the mean of the imbalance values of all nodes in the network.
+Finally, $G$ denotes the imbalance of the network. $G = \displaystyle{\frac{1}{|V|}\sum_{v\in V}G_v}$. It is the mean of the imbalance values of all nodes in the network.
 A perfectly balanced network would be achieved if $G$ takes the value of $0$ whereas the balance is poor if the value of $G$ is close to 1.
 
 Our goal is to find a balance function $b$ which minimizes $G$ given a privacy aware payment channel network with initial distribution of funds $\tau_{u_1},\dots,\tau_{u_n}$.
-The constraint to this optimization problem is that the total funds $\tau_u$ are fixed for every node $u \in N$ and any choice of the balance function $b$.
-In a privacy aware payment channel network the distribution of funds $\tau_{u_1}\dots,\tau_{u_n}$ is not publicly known.\footnote{The initial distribution could be guessed from the funding transactions in the case of the Bitcoin Lightning Network for public channels. Note, this distribution will change with the first payment that is not a rebalancing operation.}
+The constraint to this optimization problem is that the total funds $\tau_u$ are fixed for every node $u \in V$ and any choice of the balance function $b$.
+In a privacy aware payment channel network the distribution of funds $\tau_{u_1}\dots,\tau_{u_n}$ is not publicly known.\footnote{Even though the initial distribution could be guessed from the funding transactions in the case of the Bitcoin Lightning Network (c.f.: \url{https://github.com/lightningnetwork/lightning-rfc/issues/720}) for public channels it will change with the first payment that is not a rebalancing operation.}
 In the same way the initial balance function is not publicly known.
 As we lack knowledge about the global network state, we cannot apply standard optimization techniques such as gradient descent, conjugate gradient methods or simulated annealing.
 We suggest to use an agent based heuristic in which every participant executes some operations to improve its own balance which others support if it also improves their balance.
@@ -143,9 +144,7 @@ We suggest to use an agent based heuristic in which every participant executes s
 \subsection{Description of the rebalancing algorithm}
 \label{sec:Algorithm}
 
-The algorithm solves the optimization problem of finding $b$ such that the balance of the network is improved.
-The developed rebalancing algorithm uses an agent-based heuristic in which participants use the local knowledge and make local adjustments. 
-This results in a global convergence towards an improved overall network balance. 
+The developed rebalancing algorithm uses an agent-based heuristic in which participants use the local knowledge and make local adjustments to estimate the optimization problem of finding $b$ such that $G$ is minimized.
 
 \begin{enumerate}
 \item A node $u$ will compute its node balance coefficient $\nu_u$.
