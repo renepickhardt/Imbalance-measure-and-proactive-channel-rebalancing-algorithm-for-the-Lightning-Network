@@ -368,15 +368,19 @@ The user experience is improved, the payment delays are lowered, and the amount 
 \section{Future Work}
 \label{sec:future}
 
-One of the possible extension of the work is to expand the experiments to different topologies and larger networks.
-As the simulation was already consuming a lot of computational resources we did not check if the algorithm greedy heuristic ist stable under concurrent payments and rebalancing operations taking place. 
-This would be interesting to investigate further.
+As the simulation was already consuming a lot of computational resources we did not check if the algorithm greedy heuristic ist stable under concurrent payments and rebalancing operations taking place.
+In a similar gist simulations on larger networks would be very interesting but require more hardware to be conducted.
 
 The current experiments have assumed stable network topology. 
 However, every channel opening or closure, as well as every single payment, will change the local (and global) balance of the network.
-It is therefore interesting to study how it adapts if the topology changes in real time due to opening or closing channels as well as a reallocation of funds due to payments that are taking place. 
+It is therefore interesting to study how it adapts if the topology changes in real time due to opening or closing channels as well as a reallocation of funds due to payments that are taking place.
+It would be in particular interesting to see how this heuristic works in combination with JIT-Routing as this would unbalance nodes to provide liquidity which our heuristic would then redistribute over the friend of a friend network.
+This would occure along all nodes on a path in intersecting friend of a friend networks.
 
 Another extension of the work is to check how the heuristic performs if only a fraction of nodes participate in the sharing of rebalancing hints and fee free rebalancing protocol.
+
+Currently implementations of the lightning network provide autopilots to the users which help the users to automatically open channels.
+The results from this research should be used in those autopilots and an investigation how exactly this might be usefull would be of high interest.
 
 The balance metric used could be used as a measure of network health in the context of random path payments. 
 However, random path payments are only one of the possible scenarios of payments flowing in a payment network. 
@@ -386,7 +390,6 @@ For example routing nodes or liquidity providers might very well want to have hi
 In a similar way merchants will probably prefer many channels with low values of $\zeta$.
 The proposed algorithm could potentially be exchanged to an updated version in which nodes decide their own health metric,
 instead of using balance as the measure of network health.
-
 
 % ==========================================================================================
 \section{Acknowledgements}
