@@ -25,17 +25,16 @@
 Making a payment in privacy aware payment channel networks is currently achieved by trying several payment paths until one succeeds which can yield to several minutes for a payment to complete.
 We introduce a network imbalance measure and formulate the optimization problem of improving the balance of the network as a sequence of rebalancing operations of the funds within the channels along circular paths within the network.
 As the funds and balances of channels are not globally known we introduce a greedy heuristic with which every node despite the uncertainty can improve its own local balance.
-In an empirical evaluation on a recent snapshot of the Lightning Network we show that the imbalance distribution of the network has a Kolmogorov Smirnoff distance of 0.74 to the imbalance distribution after the heuristic is applied.
+In an empirical evaluation on a recent snapshot of the Lightning Network we show that the imbalance distribution of the network has a Kolmogorov Smirnoff distance of $0.74$ in comparison to the imbalance distribution after the heuristic is applied.
 We further show that the success rate of a tiny payment increases from $11.2\%$ on the imbalanced network to $98.3\%$ in the balanced network.
  Similarly the median possible payment size accross all pairs of participants increases from $0$ to $0.5$ mBTC for initial routing attempts on the cheapest possible path.
 We provide emperical and game theoretic evidence that routing fees should be dropped for proactive rebalancing operations.
-We conducted 4 different strategies for selecting rebalancing cycles which lead to similar results indicating that a collaborative approach within the friend of the friend network might be preferable from a practical point of view. 
-  
+Executing $4$ different strategies for selecting rebalancing cycles lead to similar results indicating that a collaborative approach within the friend of the friend network might be preferable from a practical point of view.
 
 \end{abstract}
 
 \begin{keywords}
-optimization, convex optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, agent based systems, collaborative problem solving, 
+Imbalance, rebalancing, Optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, agent based systems, collaborative problem solving, privacy 
 \end{keywords}
 \hrule\bigskip
 ]
@@ -67,7 +66,7 @@ Another option is by using a submarine swap\footnote{\url{https://github.com/sub
 
 We formulate an optimization problem of finding a sequence of rebalance operation that minimizes the network's imbalance.
 As the information necessary to solve the optimization problem is not publically known in privacy aware payment channel networks we provide a greedy privacy aware agent based heuristic for its participants to find a minimum for the problem. 
-In an empirical study we show that the greedy heuristic will lead to a success rate of almost $100\%$ for a small payment between two arbitrary selected nodes.
+In an empirical study we show that the greedy heuristic will lead to a success rate of $98.3\%$ for a small payment between two arbitrary selected nodes.
 Also the median possible payment size between all pairs of nodes increases from $0$ in the imbalanced network to $0.5$ mBTC in the best balanced networks that we found.
 
 While single nodes can already execute the algorithm in currently existing payment channel networks they have to pay routing fees for rebalancing operations.
@@ -140,7 +139,6 @@ In a privacy aware payment channel network the distribution of funds $\tau_{u_1}
 In the same way the initial balance function is not publicly known.
 As we lack knowledge about the global network state, we cannot apply standard optimization techniques such as gradient descent, conjugate gradient methods or simulated annealing.
 We suggest to use an agent based heuristic in which every participant executes some operations to improve its own balance which others support if it also improves their balance.
-In the following subsection we describe a short example using the newly defined terminology. In the subsequent subsection we describe our rebalancing algorithm.
 
 \subsection{Description of the rebalancing algorithm}
 \label{sec:Algorithm}
