@@ -145,28 +145,27 @@ We suggest to use an agent based heuristic in which every participant executes s
 \label{sec:Algorithm}
 
 The developed rebalancing algorithm uses an agent-based heuristic in which participants use the local knowledge and make local adjustments to estimate the optimization problem of finding $b$ such that $G$ is minimized.
-
+It executes as follows:
 \begin{enumerate}
 \item A node $u$ will compute its node balance coefficient $\nu_u$.
 \item $u$ will then compute the channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ for its $d$ channels.
 \item The node will select all channels $e=(u,v_i)$ for which its channel balance coefficient is higher 
 than its node balance coefficient, i.e.~$C = \{(u,v_i) | \zeta_{(u,v_i)} - \nu_u\ > 0\}$\footnote{
-  Note, that we do not need to take absolute values as $u$ will only be able to initiate a rebalancing operation by sending money which means decreasing its channel balance coefficient of $\zeta_{(u,v_i)}$.}.
-\item from the candidate set $C$ a random channel $e=(u,v)$ is selected.\footnote{
-  We show in the experimental evaluation that always taking the channel with the biggest gain makes the heuristic stuck too quickly. 
-  The reason is that if a channel cannot be rebalanced in the next step the same channel is tried again.} 
-\item Now the node searches for a circular payment to itself along $e=(u,v)$ within its friend of a friend network by choosing a path $p = [u,v,x_1,\dots,x_n,u]$. The amount of that payment should decrease the value of $\zeta_{(u,v)}$ to that of $\nu_u$ and can be computed as $a = c(e)\cdot (\zeta_{(u,v)}-\nu_u)$. The end of the circle should be a channel $(x_n,u)$ for which the channel balance coefficient $\zeta_{(u,x_n)}$ is smaller than the node balance coefficient $\nu_u$.\footnote{In one of the experiments we weaken this strong critera and show emperically that it makes sense to drop it.}
-\item The node conducts the payment if all the nodes on the path $p$ agree to participate. 
-\item Repeat all steps as long as the local balance coefficients are not even enough.
+  Note, that we do not need to take absolute values as $u$ will only be able to initiate a rebalancing operation by sending money which means decreasing its channel balance coefficient of $\zeta_{(u,v_i)}$ towards $\nu_u$.}.
+\item from the candidate set $C$ a random channel $e=(u,v)$ is selected.
+\item Now the node searches for a circular payment to itself along $e=(u,v)$ by choosing a path $p = [v,x_1,\dots,x_n,u]$. The amount of that payment should decrease the value of $\zeta_{(u,v)}$ to that of $\nu_u$ and can be computed as $a = c(e)\cdot (\zeta_{(u,v)}-\nu_u)$. The end of the circle should be a channel $(x_n,u)$ for which the channel balance coefficient $\zeta_{(u,x_n)}$ is smaller than the node balance coefficient $\nu_u$.\footnote{In one of the experiments we weaken this strong critera and show emperically that it makes sense to drop it for the benefit of easier path finding at the cost of small oscilations of the algorithm.}
+\item The node conducts the payment if all the nodes on the path $p$ agree to participate. It could happen that some nodes will only participate with a value smaller than $a$. As this is already progress $u$ will accept the suggested amount instead of being stubborn. 
+\item Repeat all steps as long as the local balance coefficients are not even enough and as long as paths are found.
 \end{enumerate}
 
-When a circular path exists, it is easy to see that making a payment along this path will make the distribution of local balance coefficients for node $u$ more even.
-If no such circular path can be found the local balance stays constant.
-Finding a circular rebalancing path might be difficult as the balances within the network are not known. 
-However, this problem is not worse than the current problem of probing paths for regular payments.
+When a circular path exists, it is easy to see that making a payment along this path will make the distribution of local balance coefficients for node $u$ and those of all participents more even as that was the condition under which they participated in the rebalancing operation.
+If no such circular path can be found the local balance coefficent and thus the Network helath stays constant.
 
 \section{Experimental Setup}
 \label{sec:setup}
+
+We evaluated $4$ different strategies for finding rebalancing cycles. \texttt{cycles4} tests all cycles of length $4$ or smaller. In the same way \texttt{cycle5} tests all cycles of length $5$ or smaller. \texttt{foaf} tests most cycles of the friend of a friend.\footnote{This approximation is achieved by using \texttt{cycle4} as a cycle base as all cycles of length 4 and smaller certainly are part of the friend of a friend network.}
+\texttt{mpp} is short for multipath payments and uses the same heuristic as \texttt{foaf} but will only take a $20^{th}$ of the maximum possible amount for rebalancing operation is supposed to be split over various cycles.
 
 We conducted our experiment on a snapshot of the public Lightning Network from October 2019.
 That network view was retrieved from the gossip store of our lightning node which is accassible at \url{https://ln.rene-pickhardt.de}.
@@ -176,7 +175,7 @@ This had to be done as the gossip protocol also does not propagate any informati
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{code/vs/fig/distribution_of_nus.png}
- \caption{The histogram shows the distribution of relative funds $\nu_v$ for each node $v\in G$.}
+ \caption{The histogram shows the distribution of relative funds $\nu$ for all nodes of the network.}
  \label{fig:initial_funds}
 \end{figure}
 From figure \cref{fig:initial_funds} we can see the result of our random process of allocating funds to the nodes.
