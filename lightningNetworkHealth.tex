@@ -325,43 +325,42 @@ Finally we tracked the routing fees that nodes would have to pay for their rebal
  Figure \cref{fig:fees} shows that the overall fees are normally distributed around $0$.
  This means that the expected value of fees that need to be paid or are being earned if all nodes participate in proactive rebalancing is $0$.
 An expected value of $0$ is a strong indicator that fees should not play a role for rebalancing operations if those are beneficial for every node which is asked to take part in the rebalancing operation.
- We zoomed heavily in as only $50\%$ of the nodes have been depicted in this view due to the large variance.
+ We zoomed heavily in so that only $50\%$ of the nodes have been depicted in this view due to the large variance.
 % =======================================================================
 \section{Discussion}
 \label{sec:conclusion}
-We empirically verified that the overall ability of network participants to route payments on random paths is improved in a balanced network. 
+We empirically verified that the overall ability of the network participants to route payments on random paths is improved a lot in a balanced network. 
 As privacy aware payment channel networks use source-based pathfinding without knowing the constraints of the channels along an attempted path, the likelihood of conducting a successful payment with few attempts becomes considerably higher in a balanced network.
 Our results show that nodes do not need to strive for $\nu_u = 0.5$ and perfect local balance of their channels in order to produce high success rate of random payments.
 It is sufficient for the overall network to be balanced if every node tries to optimize their channel balance coefficients be almost equal. 
-This can be achieved by optimizing for a low Gini coefficient of the channel balance coefficients by making circular rebalancing payments.
+This can be achieved by making circular rebalancing payments.
 
-We have proposed a greedy rebalancing heuristic which we have tested with $4$ particular strategies to select rebalancing cycles.
+We have proposed a greedy rebalancing heuristic which we have tested with $4$ different strategies to select rebalancing cycles.
 We could see that the results of these four strategies do not significanly differ for the overall performance of the network.
-However for practical reasons we propose to stick to rebalancing in the friend of a friend network as this network is usually small and all circles in this subgraph canbe computed efficiently.
 While multipath rebalancing achieves the actual best values on both success rates and median payment size the lead is neglictable and stands in no ratio to the extra amount of rebalancing operations that need to take place.
 
-Finally we empirically showed that the earned and paid fees for rebalancing operations are normally distributed around 0 satoshi suggesting that this is a zero sum game if every node participates in proactive rebalancing.
+Computing the rebalancing circles is the most expensive operation in our simulation since we had to do it for every node of the network.
+If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a singl node.
+This holds in particular true if those cycles will only be searched within the friend of a friend network which is typically small enough.
+As the results of the different strategies for finding cycles did not vary and for the previous reson we propose to stick to rebalancing in the friend of a friend network.
+In a real payment channel network this computation would only have to be conducted 
+if the distribution of channel balance coefficients becomes too uneven,
+which is easily monitored after every payment or routing attempt without additional performance overhead.
+
+However even with friend of a friend rebalancing the simulation is limited to a rather small amount of nodes which prevents us from conducting experiments on simulated large scale payment channel networks with millions of nodes / channels.
+
+Finally we empirically showed that the earned and paid fees for rebalancing operations are normally distributed around $0$ Satoshi suggesting that this is a zero sum game if every node participates in proactive rebalancing.
 Routing fees might discourage nodes from proactively rebalancing as they might hope to earn fees if they wait for others to rebalance their channels.
 This behaviour is refered to as the tragedy of the commons\footnote{c.f. \url{https://en.wikipedia.org/wiki/Tragedy_of_the_commons}} and would be mitigated with a fee free rebalancing protocol.
-To incentivice the participation of the rebalancing it seems reasonable to omit fees for a rebalancing operation.
+As fees are empirically a zero sum game and to incentivice the participation of the rebalancing it seems reasonable to omit fees for rebalancing operations if those are beneficial for every participant as in the experiment.
 
-Thus in a similar way as Internet routers collaboratively solve the path finding problem by exchanging routing tables, we furthermore suggest for the network to work collaboratively towards achieving a good balance by locally sharing routing hints. 
-As balances of channels in the friend of a friend network can easily be probed, it seems plausible in privacy aware payment channel networks to include a communication protocol with which a node signal their partners that it wants to rebalance a certain channel with a certain amount.
+In a similar way as Internet routers collaboratively solve the path finding problem by exchanging routing tables, we furthermore suggest for the network to work collaboratively towards achieving a good balance by locally sharing rebalancing hints. 
+As balances of channels in the friend of a friend network can easily be probed, it seems plausible in privacy aware payment channel networks to include a communication protocol with which a node signals to their partners that it wants to rebalance a certain channel with a certain amount.
+Instead of a certain amount a node could just signal if it needs inbound or outbound liquidity on a channel. 
 We think that our suggestion for sharing channels need for a rebalancing operation does not reveal more information as can currently be collected with probing attacks.
 However sharing rebalancing hints gives out perfect information to compute available rebalancing cycles.
 
-\textbf{todo: see if stays in an where}
-In particular we see that participants do not have to follow a strategy of having as much inbound capacity as outbound capacity for this algorithm to work. 
-
-Computing the rebalancing circles is the most expensive operation, due to the fact that it requires solving the shortest path problem.
-If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a node as the shortest paths only need to be computed in a subset of the friend of a friend network.
-This is typically small enough to have substantial performance overheads. 
-In a real payment channel network this computation would only have to be conducted 
-if the distribution of channel balance coefficients becomes too uneven,
-which is easily monitored after every payment or routing attempt without performance overhead.
-However, in the simulation the path finding operations limit the experiments to rather small tests and also prevents us from conducting experiments on simulated large scale payment channel networks with millions of nodes / channels.
-
-This is particularly important as privacy aware payment channel networks use source based onion routing and technically have to guess a path.
+The rebalancing is particularly important as privacy aware payment channel networks use source based onion routing and technically have to guess a path for making a payment.
 When those initially guessed paths provide a high rate with high payment amounts there are considerable benefits for the overall functioning of the payment channel network. 
 The user experience is improved, the payment delays are lowered, and the amount of messaging and coordination is minimised.
 
