@@ -1,9 +1,16 @@
-\documentclass[a4paper]{paper} 
+\documentclass[conference]{IEEEtran} 
 %\usepackage{babel}
-\usepackage{hyperref}
-\usepackage{amsfonts}
-\usepackage{amsmath}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
 \usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+\usepackage{hyperref}
 \usepackage[space]{grffile}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{pdfpages}
@@ -11,15 +18,24 @@
 \usepackage[capitalize,noabbrev]{cleveref}
 
 \graphicspath{{img/}}
+\begin{document} 
 \title{Implications of payment channel imbalance for median possible payment amounts and payment success rates on the Lightning Network}
 %\title{Improving path finding in the Lightning Network by proactive rebalancing of payment channels with an heuristic}
 %\subtitle{Draft version}
-\author{Rene Pickhardt and Mariusz Nowostawski} 
-\institution{NTNU Gj{\o}vik} 
+\author{\IEEEauthorblockN{1\textsuperscript{st} Rene Pickhardt}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{Norwegian University of Science and Technology}\\
+Gj{\o}vik, Norway \\
+rene.m.pickhardt@ntnu.no}
+\and
+\IEEEauthorblockN{2\textsuperscript{nd} Mariusz Nowostawski}
+\IEEEauthorblockA{\textit{Department of Computer Science} \\
+\textit{Norwegian University of Science and Technology}\\
+Gj{\o}vik, Norway \\
+mariusz.nowostawski@ntnu.no}
+}
 
-\begin{document} 
-\twocolumn[\maketitle 
-\hrule 
+\maketitle 
 \begin{abstract}
 Making a payment in privacy aware payment channel networks is currently achieved by trying several payment paths until one succeeds which can yield to several minutes for a payment to complete.
 We introduce a network imbalance measure and formulate the optimization problem of improving the balance of the network as a sequence of rebalancing operations of the funds within the channels along circular paths within the network.
@@ -32,11 +48,10 @@ Executing $4$ different strategies for selecting rebalancing cycles lead to simi
 
 \end{abstract}
 
-\begin{keywords}
+\begin{IEEEkeywords}
 Imbalance, rebalancing, Optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, collaborative problem solving, privacy 
-\end{keywords}
-\hrule\bigskip
-]
+\end{IEEEkeywords}
+
 
 
 %==========================================================================
