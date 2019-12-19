@@ -13,7 +13,7 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 \graphicspath{{img/}}
-\title{Improving path finding in the Lightning Network by proactive rebalancing of payment channels with an agent based heuristic}
+\title{Improving path finding in the Lightning Network by proactive rebalancing of payment channels with an heuristic}
 %\subtitle{Draft version}
 \author{Rene Pickhardt and Mariusz Nowostawski} 
 \institution{NTNU Gj{\o}vik} 
@@ -24,7 +24,7 @@
 \begin{abstract}
 Making a payment in privacy aware payment channel networks is currently achieved by trying several payment paths until one succeeds which can yield to several minutes for a payment to complete.
 We introduce a network imbalance measure and formulate the optimization problem of improving the balance of the network as a sequence of rebalancing operations of the funds within the channels along circular paths within the network.
-As the funds and balances of channels are not globally known we introduce a greedy agent based heuristic with which every node despite the uncertainty can improve its own local balance.
+As the funds and balances of channels are not globally known we introduce a greedy heuristic with which every node despite the uncertainty can improve its own local balance.
 In an empirical simulation on a recent snapshot of the Lightning Network we show that the imbalance distribution of the network has a Kolmogorov Smirnoff distance of $0.74$ in comparison to the imbalance distribution after the heuristic is applied.
 We further show that the success rate of a tiny payment increases from $11.2\%$ on the imbalanced network to $98.3\%$ in the balanced network.
  Similarly the median possible payment size across all pairs of participants increases from $0$ to $0.5$ mBTC for initial routing attempts on the cheapest possible path.
@@ -34,7 +34,7 @@ Executing $4$ different strategies for selecting rebalancing cycles lead to simi
 \end{abstract}
 
 \begin{keywords}
-Imbalance, rebalancing, Optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, agent based systems, collaborative problem solving, privacy 
+Imbalance, rebalancing, Optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, collaborative problem solving, privacy 
 \end{keywords}
 \hrule\bigskip
 ]
@@ -65,7 +65,7 @@ Nodes can reduce their imbalance either alone or collaboratively with the help o
 Another option is to use a submarine swap\footnote{\url{https://github.com/submarineswaps/swaps-service}} as an off-chain / on-chain swapping service.
 
 We formulate an optimization problem of finding a sequence of rebalance operation that minimizes the network's imbalance.
-As the information necessary to solve the optimization problem is not publically known in privacy aware payment channel networks we provide a greedy privacy aware agent based heuristic for its participants to find a minimum for the problem. 
+As the information necessary to solve the optimization problem is not publically known in privacy aware payment channel networks we provide a greedy privacy aware heuristic for its participants to find a minimum for the problem. 
 In an empirical study we show that the greedy heuristic will lead to a success rate of $98.3\%$ for a small payment between two arbitrary selected nodes.
 Also the median possible payment size between all pairs of nodes increases from $0$ in the imbalanced network to $0.5$ mBTC in the best balanced networks that we found.
 
@@ -78,7 +78,7 @@ This information could easily be probed anyway and seems not to worsen the priva
 
 The remainder of this paper is organized as follows: In section \cref{sec:relatedWork} we give a short overview of related work in this field.
 We then introduce the notation and definition of the imbalance score in section \cref{sec:formalization} and formulate the optimization problem to reduce the imbalance.
-We propose a greedy, agent based and collaborative algorithm in \ref{sec:Algorithm} to address the optimization problem.
+We propose a greedy and collaborative algorithm in \ref{sec:Algorithm} to address the optimization problem.
 We also propose different strategies for the algorithm to probe for potential rebalancing cycles.
 In \cref{sec:setup} we introduce the experimental setup and the data set that we used.
 After showing our empirical results in \cref{sec:results} we discuss the results and propose some future work in the last two sections.
@@ -138,12 +138,12 @@ The constraint to this optimization problem is that the total funds $\tau_u$ are
 In a privacy aware payment channel network the distribution of funds $\tau_{u_1}\dots,\tau_{u_n}$ is not publicly known.\footnote{Even though the initial distribution could be guessed from the funding transactions in the case of the Bitcoin Lightning Network (c.f.: \url{https://github.com/lightningnetwork/lightning-rfc/issues/720}) for public channels it will change with the first payment that is not a rebalancing operation.}
 In the same way the initial balance function is not publicly known.
 As we lack knowledge about the global network state, we cannot apply standard optimization techniques such as gradient descent, conjugate gradient methods or simulated annealing.
-We suggest to use an agent based heuristic in which every participant executes some operations to improve its own balance which others support if it also improves their balance.
+We suggest to use an heuristic in which every participant executes some operations to improve its own balance which others support if it also improves their balance.
 
 \subsection{Description of the rebalancing algorithm}
 \label{sec:Algorithm}
 
-The developed rebalancing algorithm uses an agent-based heuristic in which participants use the local knowledge and make local adjustments to estimate the optimization problem of finding $b$ such that $G$ is minimized.
+The developed rebalancing algorithm uses an heuristic in which participants use the local knowledge and make local adjustments to estimate the optimization problem of finding $b$ such that $G$ is minimized.
 It executes as follows:
 \begin{enumerate}
 \item A node $u$ will compute its node balance coefficient $\nu_u$.
