@@ -1,0 +1,14 @@
+Alice	Bob	100	100	1	1
+Bob	Alice	100	0	1	1
+Bob	Charli	100	100	1	1
+Charli	Bob	100	0	1	1
+Charli	David	100	100	1	1
+David	Charli	100	0	1	1
+David	Emma	100	100	1	1
+Emma	David	100	0	1	1
+Emma	Frank	100	100	1	1
+Frank	Emma	100	0	1	1
+Frank	Alice	100	100	1	1
+Alice	Frank	100	0	1	1
+Alice	David	100	100	1	1
+David	Alice	100	0	1	1
