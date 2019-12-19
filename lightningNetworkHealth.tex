@@ -19,7 +19,8 @@
 
 \graphicspath{{img/}}
 \begin{document} 
-\title{Channel funds imbalance measure and proactive rebalancing of payment channels in the Lightning Network}
+\title{Imbalance measure and proactive channel rebalancing algorithm for the Lightning Network}
+%\title{Channel funds imbalance measure and proactive rebalancing of payment channels in the Lightning Network}
 %\title{Proactive rebalancing of payment channels in the Lightning Network}
 %\title{Implications of payment channel imbalance for median possible payment amounts and payment success rates on the Lightning Network}
 %\title{Improving path finding in the Lightning Network by proactive rebalancing of payment channels with an heuristic}
@@ -59,7 +60,7 @@ Imbalance, rebalancing, Optimization, Bitcoin, Lightning Network, payment channe
 
 %==========================================================================
 \section{Introduction}
-Payment channel network has been introduced in order to mitigate the scaling issues of blockchain technologies such as Bitcoin\cite{poon2016bitcoin}.
+The Lightning Network has been introduced in order to mitigate the scaling issues of blockchain technologies such as Bitcoin\cite{poon2016bitcoin}.
 With the help of smart contracts, a payment channel can be established to allow the cryptographically secure transfer of value without the necessity to record the transaction to the central ledger.
 This yields enhanced privacy properties for the participants of the network.
 In order to protect that privacy while routing a payment through several payment channels privacy aware payment channel networks use a source-based onion routing scheme, like the Sphinx Mix format~\cite{danezis2009sphinx}.
@@ -69,7 +70,7 @@ While the Lightning Network, for example, shares the capacity of public channels
 (1) this would compromise the privacy as one could collect all changes of the channel balances and reconstruct the flow of payments;
 (2) propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technologies and other broadcast networks.
 The decision to use source-based routing together with the unknown channel balances of the network results in a challenge for finding a path of payment channels so that all channels along the path have enough liquidity to be able to forward an attempted payment.
-Currently, this challenge is met by probing paths with a brute force approach until one such path is succeeds.
+Currently, this challenge is met by probing paths with a brute force approach until one such path succeeds to route the payment.
 It has been shown that probing for paths can take more than 3 minutes for more than $5\%$ of the attempted payments~\cite{decker2019lnconf}. This leads to a poor payment latency and poor user experience.
 Imagine a grocery store in which for every $20^{th}$ customer the cash register would have to wait three minutes until the payment was received.
 
@@ -82,12 +83,12 @@ Nodes can reduce their imbalance either by initiating a rebalancing their own ch
 Another option is to use a submarine swap\footnote{\url{https://github.com/submarineswaps/swaps-service}} as an off-chain/on-chain swapping service.
 
 We formulate an optimization problem of finding a sequence of rebalancing operations that minimize the network's imbalance.
-As the information necessary to solve the optimization problem is not publicly known in privacy-aware payment channel network, we provide a greedy heuristic for its participants to find a minimum for the problem. 
+As the information necessary to solve the optimization problem is not publicly known in privacy-aware payment channel networks, we provide a greedy heuristic for its participants to find a minimum for the problem. 
 In an empirical study, we show that the greedy heuristic will lead to a success rate of $98.3\%$ for a small payment between two arbitrary selected nodes.
 Also the median possible payment size between all pairs of nodes increases from $0$ in the imbalanced network to $0.5$ mBTC in the best balanced networks that we found, when the cheapest possible path is selected for the payment.
 
 While single nodes can already execute the algorithm in currently existing payment channel networks they have to pay routing fees for the rebalancing operations.
-Thus economically, the fees are disincentivize the nodes to conduct rebalancing.
+Thus economically, the fees disincentivize the nodes to conduct rebalancing operations.
 We compared the earned fees for being participant of another nodes rebalancing attempt and the paid fees for initiating rebalancing operations.
 Showing that these numbers are normally distributed around $0$ we propose to omit fees for proactive rebalancing operations to incentivize nodes to execute our algorithm which appears to be beneficial for the entire network. 
 Looking at different strategies of finding rebalancing cycles we suggest, for the sake of speed, that nodes share with their neighbors on which local channels they would like to have inbound or outbound capacity.
