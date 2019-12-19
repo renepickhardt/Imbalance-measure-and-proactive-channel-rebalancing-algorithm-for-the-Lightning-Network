@@ -236,7 +236,7 @@ This is not more than $37$ rebalancing operations per node.
 Taking into account that the average node degree is $9$ this means that on average each node needs to successfully execute about $4$ rebalancing operations per channel.  
 This seams plausible in the sense that every channel gets rebalanced at least once.\footnote{Note, that due to the collaborative behaviour of nodes a node might also get its channels rebalanced in the rebalancing attempts of other nodes.}
 The multipath rebalancing needs more operations which makes sense as we only rebalanced for a $20^{th}$ of the possible amount in the multipath case since we wanted to have multiple other cycles to rebalance that particular channel.
-The fact that \texttt{cycle4} seems to converge rather quickly seems due to the experimental setup and the fact that less of those cycles exist. However it also does not reach the minimum imbalance as well as the other strategies. 
+While \texttt{cycle4} seems to improve the balance more quickly it does not reach the minimum imbalance as well as the other strategies.
 In particular the algorithm converges to a local minimum rather quickly.
 Our experimental runs resulted in states that are not identical when we shuffled the order of cycles that we probed, however, the differences were negligible. 
 We guess that the local minimum might be close to global minimum of the optimization problem.
@@ -249,11 +249,10 @@ We guess that the local minimum might be close to global minimum of the optimiza
 \end{figure}
 
 In \cref{fig:imba_vs_success} we see that a lower imbalance score $G$ yields a higher success rate of payments as one would expect.
-The success rate is measured by attempting a payment of $1$ satoshi between all pairs of nodes and counting the relative amount of payment attempts for which the cheapest path from the source to the destination would be successful.
+The success rate is measured by attempting a payment of $1$ Satoshi between all pairs of nodes and counting the relative amount of payment attempts for which the cheapest path from the source to the destination was successful.
 We computed the success rate of every time the balance score hits a new score rounded to two decimals.
 It is the first experiment that indicates that the defined imbalance score was well chosen. 
 Again the multipath payment strategy sticks out as it achieves a rather high success rate while the network is still rather imbalanced.
-However this is a little bit missleading for the following reasons.
 A successrate of $80\%$ is reached for an imbalance score of $0.43$.
 Comparing this back with \cref{fig:imbalancehovertime} we see that about $250$k rebalance operations are necessary to achieve this success rate.
 Even the worst performing algorithm achieves this success rate with far less than $100$k rebalancing operations and a much better overall imbalance score. 
@@ -272,10 +271,11 @@ In \cref{fig:imba_vs_payment_size} we compare the imbalance of the network with 
 For all pairs of shortest paths on the base fee graph we look at the amount that could be forwarded along that path.
 Finally we take the median of those values.
 This means that at least $50\%$ of payment pairs are able to forward this amount.
-Again we see that the more lower the imbalance score the higher the median possible payment size.
+Again we see that the lower the imbalance score becomes the higher the median possible payment size gets.
 This suggests that statistically a more balanced network is able to successfully route higher payment amounts on the first try.
 All four strategies are achieving a median possible payment amount of roughly $50000$ Satoshi.
-This indicates that the strategy for probing rebalancing cycles seems to have little to no impact to the final abilities of the network to perform payments.
+This means that in a balanced network $50\%$ of payment pairs are able to successfully conduct a payment of $0.5$ mBTC along the cheapest path. 
+The result also indicates that the strategy for probing rebalancing cycles seems to have little to no impact to the final abilities of the network to perform payments.
 
 
 %We note that the rebalancing along cycles in which each hop has to improve the $\zeta$ values of each participants (cycles of length $4$ and $5$) are monotonic in this diagram.
@@ -294,8 +294,6 @@ We look a little bit closer at the datapoint of the most balanced network with t
 Instead of just looking at the median we study the cumulative distribution function of the histogram in \cref{fig:cdf_paymentsize}.
 We can see that in the imbalanced network almost $88.8\%$ of the paths are not able to forward a single satoshi (meaning a $11.2\%$ success rate).
 This number drops below $1.7\%$ (meaning a $98.3\%$ success rate) for the balanced network.
-The median of the balanced network takes a value of $50000$ satoshi ($0.5$ mBTC) which at the time of writing is worth about $3$ USD.
-This shows that in a balanced Lightning Network $50\%$ of payment pairs are able to make micro payments of up to $3$ USD on the first attempt. 
 
 For the friend of friend network we have also plotted the final distribution of Gini coefficients in \cref{fig:final_gini}. 
 \begin{figure}
@@ -326,8 +324,8 @@ Finally we tracked the routing fees that nodes would have to pay for their rebal
  \end{figure}
  Figure \cref{fig:fees} shows that the overall fees are normally distributed around $0$.
  This means that the expected value of fees that need to be paid or are being earned if all nodes participate in proactive rebalancing is $0$.
-An expected value of $0$ is a strong indicator that fees should not play a role for rebalancing operations if those are beneficial for every node which is asked to take part in the rebalancing operation.
- We zoomed heavily in so that only $50\%$ of the nodes have been depicted in this view due to the large variance.
+An expected value of $0$ is a strong indicator that fees should not play a role for rebalancing operations if those are beneficial for all nodes that are asked to take part in the rebalancing operation.
+ We zoomed heavily in so that only $50\%$ of the nodes have been depicted in this view due to the large variance of this distribution.
 % =======================================================================
 \section{Discussion}
 \label{sec:conclusion}
@@ -339,9 +337,9 @@ This can be achieved by making circular rebalancing payments.
 
 We have proposed a greedy rebalancing heuristic which we have tested with $4$ different strategies to select rebalancing cycles.
 We could see that the results of these four strategies do not significanly differ for the overall performance of the network.
-While multipath rebalancing achieves the actual best values on both success rates and median payment size the lead is neglictable and stands in no ratio to the extra amount of rebalancing operations that need to take place.
+While multipath rebalancing achieves the actual best values on both success rates and median payment size the lead is negligible and stands in no ratio to the extra amount of rebalancing operations that need to take place.
 
-Computing the rebalancing circles is the most expensive operation in our simulation since we had to do it for every node of the network.
+Computing the rebalancing cycles is the most expensive operation in our simulation since we had to do it for every node of the network.
 If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a singl node.
 This holds in particular true if those cycles will only be searched within the friend of a friend network which is typically small enough.
 As the results of the different strategies for finding cycles did not vary and for the previous reson we propose to stick to rebalancing in the friend of a friend network.
@@ -349,21 +347,19 @@ In a real payment channel network this computation would only have to be conduct
 if the distribution of channel balance coefficients becomes too uneven,
 which is easily monitored after every payment or routing attempt without additional performance overhead.
 
-However even with friend of a friend rebalancing the simulation is limited to a rather small amount of nodes which prevents us from conducting experiments on simulated large scale payment channel networks with millions of nodes / channels.
-
 Finally we empirically showed that the earned and paid fees for rebalancing operations are normally distributed around $0$ Satoshi suggesting that this is a zero sum game if every node participates in proactive rebalancing.
 Routing fees might discourage nodes from proactively rebalancing as they might hope to earn fees if they wait for others to rebalance their channels.
 This behaviour is refered to as the tragedy of the commons\footnote{c.f. \url{https://en.wikipedia.org/wiki/Tragedy_of_the_commons}} and would be mitigated with a fee free rebalancing protocol.
-As fees are empirically a zero sum game and to incentivice the participation of the rebalancing it seems reasonable to omit fees for rebalancing operations if those are beneficial for every participant as in the experiment.
+As fees are empirically a zero sum game and to incentivice the participation of the rebalancing it seems reasonable to omit fees for rebalancing operations if those are beneficial for every participant as in the experiment.\footnote{This would of course need a protocol change in the lightning network protocol as the current onion routing could not guarantee to the routing noes that they process a fee free rebalancing payment.}
 
 In a similar way as Internet routers collaboratively solve the path finding problem by exchanging routing tables, we furthermore suggest for the network to work collaboratively towards achieving a good balance by locally sharing rebalancing hints. 
 As balances of channels in the friend of a friend network can easily be probed, it seems plausible in privacy aware payment channel networks to include a communication protocol with which a node signals to their partners that it wants to rebalance a certain channel with a certain amount.
 Instead of a certain amount a node could just signal if it needs inbound or outbound liquidity on a channel. 
-We think that our suggestion for sharing channels need for a rebalancing operation does not reveal more information as can currently be collected with probing attacks.
+We think that our suggestion for sharing channels that need a rebalancing operation does not reveal more information as can currently be collected with probing attacks.
 However sharing rebalancing hints gives out perfect information to compute available rebalancing cycles.
 
 The rebalancing is particularly important as privacy aware payment channel networks use source based onion routing and technically have to guess a path for making a payment.
-When those initially guessed paths provide a high rate with high payment amounts there are considerable benefits for the overall functioning of the payment channel network. 
+When those initially guessed paths provide a high success rate with high payment amounts there are considerable benefits for the overall functioning of the payment channel network. 
 The user experience is improved, the payment delays are lowered, and the amount of messaging and coordination is minimised.
 
 % =========================================================================================
@@ -373,11 +369,12 @@ The user experience is improved, the payment delays are lowered, and the amount 
 As the simulation was already consuming a lot of computational resources we did not check if the algorithm greedy heuristic ist stable under concurrent payments and rebalancing operations taking place.
 In a similar gist simulations on larger networks would be very interesting but require more hardware to be conducted.
 
-The current experiments have assumed stable network topology. 
-However, every channel opening or closure, as well as every single payment, will change the local (and global) balance of the network.
+The current experiments have assumed a stable network topology. 
+However, every channel opening or closure, as well as every single payment, will change the imbalance of the network.
 It is therefore interesting to study how it adapts if the topology changes in real time due to opening or closing channels as well as a reallocation of funds due to payments that are taking place.
 It would be in particular interesting to see how this heuristic works in combination with JIT-Routing as this would unbalance nodes to provide liquidity which our heuristic would then redistribute over the friend of a friend network.
 This would occure along all nodes on a path in intersecting friend of a friend networks.
+Along the same gist it would be very interesting to see how this algorithm behaves together with Atomic Multipath Payments which are in the style of \cite{bagaria2019boomerang} redundant but along our results carry at most $50000$ Satoshi. 
 
 Another extension of the work is to check how the heuristic performs if only a fraction of nodes participate in the sharing of rebalancing hints and fee free rebalancing protocol.
 
@@ -396,8 +393,7 @@ instead of using balance as the measure of network health.
 % ==========================================================================================
 \section{Acknowledgements}
 \label{sec:ack}
-We thank Stefan Richter for helpful comments on early drafts of this work.
-
+We are grateful to Vivek Bagaria and Joachim Neu for an interesting discussion about their and our work that initiated this particular research. We thank Stefan Richter for helpful comments on early drafts of this work. A special thank goes to Thomas Gottron, Christian Decker and Dmytro Piatkivskyi. Finally we thank the donors to \url{https://tallyco.in/s/lnbook} and Patreons supporting open knowledge. 
 
 \bibliography{lightningNetworkHealth}
 \bibliographystyle{plain}
