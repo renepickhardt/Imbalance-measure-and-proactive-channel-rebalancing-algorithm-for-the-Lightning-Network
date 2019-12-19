@@ -263,7 +263,7 @@ As $1$ Satoshi payments are not too useful in a real world setting we checked if
 \begin{figure}
  \centering
  \includegraphics[width=8cm]{code/vs/fig/imba_vs_median_payment_size.png}
- \caption{The imbalance of the network is plotted against the median value of payments that can be fulfilled betwen all pairs of nodes on the first attempt along the cheapest path. Note that failed payments are part of the statistics and counted as payments which can send $0$ satoshi.}
+ \caption{The imbalance of the network is plotted against the median value of payments that can be fulfilled betwen all pairs of nodes on the first attempt along the cheapest path. Note that failed payments are part of the statistics and counted as payments which can send $0$ Satoshi.}
  \label{fig:imba_vs_payment_size}
 \end{figure}
 
@@ -292,7 +292,7 @@ The result also indicates that the strategy for probing rebalancing cycles seems
 \end{figure}
 We look a little bit closer at the datapoint of the most balanced network with the friend of a friend strategy and compare it to the imbalanced network.
 Instead of just looking at the median we study the cumulative distribution function of the histogram in \cref{fig:cdf_paymentsize}.
-We can see that in the imbalanced network almost $88.8\%$ of the paths are not able to forward a single satoshi (meaning a $11.2\%$ success rate).
+We can see that in the imbalanced network almost $88.8\%$ of the paths are not able to forward a single Satoshi (meaning a $11.2\%$ success rate).
 This number drops below $1.7\%$ (meaning a $98.3\%$ success rate) for the balanced network.
 
 For the friend of friend network we have also plotted the final distribution of Gini coefficients in \cref{fig:final_gini}. 
