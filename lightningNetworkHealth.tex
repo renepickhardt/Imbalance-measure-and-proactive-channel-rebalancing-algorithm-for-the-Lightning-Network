@@ -1,16 +1,9 @@
-\documentclass[conference]{IEEEtran} 
+\documentclass[a4paper]{paper} 
 %\usepackage{babel}
-\IEEEoverridecommandlockouts
-% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
-\usepackage{cite}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
-\usepackage{graphicx}
-\usepackage{textcomp}
-\usepackage{xcolor}
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
-    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \usepackage{hyperref}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{graphicx}
 \usepackage[space]{grffile}
 \usepackage[margin=2.5cm]{geometry}
 \usepackage{pdfpages}
@@ -18,27 +11,16 @@
 \usepackage[capitalize,noabbrev]{cleveref}
 
 \graphicspath{{img/}}
-\begin{document} 
 \title{Imbalance measure and proactive channel rebalancing algorithm for the Lightning Network}
-%\title{Channel funds imbalance measure and proactive rebalancing of payment channels in the Lightning Network}
-%\title{Proactive rebalancing of payment channels in the Lightning Network}
 %\title{Implications of payment channel imbalance for median possible payment amounts and payment success rates on the Lightning Network}
 %\title{Improving path finding in the Lightning Network by proactive rebalancing of payment channels with an heuristic}
 %\subtitle{Draft version}
-\author{\IEEEauthorblockN{1\textsuperscript{st} Rene Pickhardt}
-\IEEEauthorblockA{\textit{Department of Computer Science} \\
-\textit{Norwegian University of Science and Technology}\\
-Gj{\o}vik, Norway \\
-rene.m.pickhardt@ntnu.no}
-\and
-\IEEEauthorblockN{2\textsuperscript{nd} Mariusz Nowostawski}
-\IEEEauthorblockA{\textit{Department of Computer Science} \\
-\textit{Norwegian University of Science and Technology}\\
-Gj{\o}vik, Norway \\
-mariusz.nowostawski@ntnu.no}
-}
+\author{Rene Pickhardt and Mariusz Nowostawski} 
+\institution{NTNU Gj{\o}vik} 
 
-\maketitle 
+\begin{document} 
+\twocolumn[\maketitle 
+\hrule 
 \begin{abstract}
 Making a payment in a privacy-aware payment channel network is achieved by trying several payment paths until one succeeds.
 With a large network, such as the Lightning Network, a completion of a single payment can take up to several minutes.
@@ -50,13 +32,14 @@ We further show that the success rate of a single unit payment increases from $1
 We provide an empirical evidence that routing fees should be dropped for proactive rebalancing operations.
 Executing $4$ different strategies for selecting rebalancing cycles lead to similar results 
 indicating that a collaborative approach within the friend of a friend network might be preferable from a practical point of view.
+
 \end{abstract}
 
-\begin{IEEEkeywords}
+\begin{keywords}
 Imbalance, rebalancing, Optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, collaborative problem solving, privacy 
-\end{IEEEkeywords}
-
-
+\end{keywords}
+\hrule\bigskip
+]
 
 %==========================================================================
 \section{Introduction}
