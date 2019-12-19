@@ -13,8 +13,8 @@
 \DeclareMathOperator*{\argmax}{arg\,max}
 
 \graphicspath{{img/}}
-\title{Network balance improvement algorithm for payment networks}
-\subtitle{Draft version}
+\title{Improving path finding in the Lightning Network by proactive rebalancing of payment channels with an agent based heuristic}
+%\subtitle{Draft version}
 \author{Rene Pickhardt and Mariusz Nowostawski} 
 \institution{NTNU Gj{\o}vik} 
 
@@ -27,8 +27,8 @@ We introduce a network imbalance measure and formulate the optimization problem 
 As the funds and balances of channels are not globally known we introduce a greedy heuristic with which every node despite the uncertainty can improve its own local balance.
 In an empirical evaluation on a recent snapshot of the Lightning Network we show that the imbalance distribution of the network has a Kolmogorov Smirnoff distance of $0.74$ in comparison to the imbalance distribution after the heuristic is applied.
 We further show that the success rate of a tiny payment increases from $11.2\%$ on the imbalanced network to $98.3\%$ in the balanced network.
- Similarly the median possible payment size accross all pairs of participants increases from $0$ to $0.5$ mBTC for initial routing attempts on the cheapest possible path.
-We provide emperical and game theoretic evidence that routing fees should be dropped for proactive rebalancing operations.
+ Similarly the median possible payment size across all pairs of participants increases from $0$ to $0.5$ mBTC for initial routing attempts on the cheapest possible path.
+We provide empirical and game theoretic evidence that routing fees should be dropped for proactive rebalancing operations.
 Executing $4$ different strategies for selecting rebalancing cycles lead to similar results indicating that a collaborative approach within the friend of the friend network might be preferable from a practical point of view.
 
 \end{abstract}
@@ -153,7 +153,7 @@ It executes as follows:
 than its node balance coefficient, i.e.~$C = \{(u,v_i) | \zeta_{(u,v_i)} - \nu_u\ > 0\}$\footnote{
   Note, that we do not need to take absolute values as $u$ will only be able to initiate a rebalancing operation by sending money which means decreasing its channel balance coefficient of $\zeta_{(u,v_i)}$ towards $\nu_u$.}.
 \item from the candidate set $C$ a random channel $e=(u,v)$ is selected.
-\item Now the node searches for a circular payment to itself along $e=(u,v)$ by choosing a path $p = [v,x_1,\dots,x_n,u]$. The amount of that payment should decrease the value of $\zeta_{(u,v)}$ to that of $\nu_u$ and can be computed as $a = c(e)\cdot (\zeta_{(u,v)}-\nu_u)$. The end of the circle should be a channel $(x_n,u)$ for which the channel balance coefficient $\zeta_{(u,x_n)}$ is smaller than the node balance coefficient $\nu_u$.\footnote{In one of the experiments we weaken this strong critera and show emperically that it makes sense to drop it for the benefit of easier path finding at the cost of small oscilations of the algorithm.}
+\item Now the node searches for a circular payment to itself along $e=(u,v)$ by choosing a path $p = [v,x_1,\dots,x_n,u]$. The amount of that payment should decrease the value of $\zeta_{(u,v)}$ to that of $\nu_u$ and can be computed as $a = c(e)\cdot (\zeta_{(u,v)}-\nu_u)$. The end of the circle should be a channel $(x_n,u)$ for which the channel balance coefficient $\zeta_{(u,x_n)}$ is smaller than the node balance coefficient $\nu_u$.\footnote{In one of the experiments we weaken this strong critera and show empirically that it makes sense to drop it for the benefit of easier path finding at the cost of small oscilations of the algorithm.}
 \item The node conducts the payment if all the nodes on the path $p$ agree to participate. It could happen that some nodes will only participate with a value smaller than $a$. As this is already progress $u$ will accept the suggested amount instead of being stubborn. 
 \item Repeat all steps as long as the local balance coefficients are not even enough and as long as paths are found.
 \end{enumerate}
