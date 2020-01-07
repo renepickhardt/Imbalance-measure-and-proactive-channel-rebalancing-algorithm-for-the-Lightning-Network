@@ -26,7 +26,7 @@ def gini(x):
 
 # initial balance of channels
 b = [0.1*i for i in range(10, 0, -1)]
-print(gini(b), "initial imblanace")
+print(gini(b), "initial imblance")
 
 new_funds = sum(b) - a
 # assuming all channels have capacity of 1 btc
