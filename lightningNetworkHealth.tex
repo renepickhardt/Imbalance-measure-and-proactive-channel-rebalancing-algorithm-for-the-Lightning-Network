@@ -49,31 +49,32 @@ mariusz.nowostawski@ntnu.no}
 
 \maketitle
 \begin{abstract}
-Making a payment in a privacy-aware payment channel network is achieved by trying several payment paths until one succeeds.
+Making a payment in a privacy-aware payment channel network can be achieved by trying out several payment paths until one succeeds.
 With a large network, such as the Lightning Network, a completion of a single payment can take up to several minutes.
 We introduce a network imbalance measure and formulate the optimization problem of improving the balance of the network as a sequence of rebalancing operations of the funds within the channels along circular paths within the network.
-As the funds and balances of channels are not globally known, we introduce a greedy heuristic with which every node despite the uncertainty can improve its own local balance.
-In an empirical simulation on a recent snapshot of the Lightning Network we demonstrate that the imbalance distribution of the network has a Kolmogorov-Smirnoff distance of $0.74$ in comparison to the imbalance distribution after the heuristic is applied.
+As the funds and balances of channels are not globally known, we introduce a greedy heuristic
+that improves every node's local balance despite the uncertainty.
+In an empirical simulation on a snapshot of the Lightning Network we demonstrate that the imbalance distribution of the network has a Kolmogorov-Smirnoff distance of $0.74$ in comparison to the imbalance distribution after the heuristic is applied.
 We further show that the success rate of a single unit payment increases from $11.2\%$ on the imbalanced network to $98.3\%$ in the balanced network.
- Similarly, the median possible payment size across all pairs of participants increases from $0$ to $0.5$ mBTC for initial routing attempts on the cheapest possible path.
+Similarly, the median possible payment size across all pairs of participants increases from $0$ to $0.5$ mBTC for initial routing attempts on the cheapest possible path.
 Executing $4$ different strategies for selecting rebalancing cycles lead to similar results 
-indicating that a collaborative approach within the friend of a friend network might be preferable from a practical point of view. \footnote{A full version of this text - including a discussion about fee free rebalancing - is available at: \url{https://arxiv.org/abs/1912.09555}}
+indicating that a collaborative approach within the friend of a friend network might be preferable from a practical point of view.\footnote{A full version of this text - including a discussion about fee free rebalancing - is available at: \url{https://arxiv.org/abs/1912.09555}}
 
 \end{abstract}
 \begin{IEEEkeywords}
-Imbalance, rebalancing, Optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, collaborative problem solving, privacy 
+imbalance, rebalancing, optimization, Bitcoin, Lightning Network, payment channel networks, path finding, routing, liquidity, flow control, congestion control, game theory, uncertainty, simulations, collaborative problem solving, privacy 
 \end{IEEEkeywords}
 
 %==========================================================================
 \section{Introduction}
 The Lightning Network has been introduced in order to mitigate the scaling issues of blockchain technologies such as Bitcoin\cite{poon2016bitcoin} by creating a network of payment channels.
-In order to protect users privacy while routing a payment through several payment channels privacy aware payment channel networks use a source-based onion routing scheme, like the Sphinx Mix format~\cite{danezis2009sphinx}.
-While the Lightning Network, for example, shares the capacity of public channels with its participants through its gossip protocol the local split of the capacity of the channels into the balance of its participants is not shared with the rest of the network for two reasons:
+In order to protect users privacy while routing a payment through several payment channels privacy a payment network can use a source-based onion routing scheme, like the Sphinx Mix format~\cite{danezis2009sphinx}.
+While the Lightning Network, for example, shares the capacity of public channels with its participants through its gossip protocol, the local split of the capacity of the channels into the balance of its participants is not shared with the rest of the network for two reasons:
 (1) this would compromise the privacy as one could collect all changes of the channel balances and reconstruct the flow of payments;
-(2) propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technologies and other broadcast networks.
+(2) propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technology.
 The decision to use source-based routing together with the unknown channel balances of the network results in a challenge for finding a path of payment channels so that all channels along the path have enough liquidity to be able to forward an attempted payment.
-Currently, this challenge is met by probing paths until one succeeds to route the payment.
-It has been shown that probing for paths can take more than 3 minutes for more than $5\%$ of the attempted payments~\cite{decker2019lnconf}. This leads to a poor payment latency and poor user experience.
+Currently, this challenge is met by probing paths until one succeeds.
+It has been demonstrated that probing for paths can take more than 3 minutes for more than $5\%$ of the attempted payments~\cite{decker2019lnconf}. This leads to a poor payment latency and poor user experience.
 Imagine a grocery store in which for every $20^{th}$ customer the cash register would have to wait three minutes until the payment was received.
 
 This study examins the consequences of nodes proactively and collaboratively distributing their funds evenly across their channels.
@@ -95,8 +96,8 @@ This information could easily be probed anyway and will not to worsen the privac
 \label{sec:relatedWork}
 
 While the Lightning Network white paper~\cite{poon2016bitcoin} does not discuss path finding and states routing as an easy problem it is generally recognized that pathfinding on the Lightning Network is a difficult problem~\cite{piatkivskyi2018split, prihodko2016flare, bagaria2019boomerang, pickhardt2019pathfinding, grunspan2018ant, sivaraman2018routing}.
-There is already research conducted in the field of rebalancing channels~\cite{khalil2017revive} which was more about the cryptographic protocols used to make sure that participants can enforce the rebalancing that was agreed upon.
-There are rebalancing operations for c-lightning\footnote{\url{https://github.com/lightningd/plugins/tree/master/rebalance}} and for lnd\footnote{\url{https://github.com/bitromortac/lndmanage}}.
+There is already research conducted in the field of rebalancing channels~\cite{khalil2017revive},which was about the cryptographic protocols used to make sure that participants can enforce the rebalancing that was agreed upon.
+There are rebalancing operations for existing lightning implementations: c-lightning\footnote{\url{https://github.com/lightningd/plugins/tree/master/rebalance}} and for lnd\footnote{\url{https://github.com/bitromortac/lndmanage}}.
 In particular, the idea of just in time rebalancing while fulfilling routing requests~\cite{pickhardt2019jit} has been implemented as JIT-routing for c-lightning\footnote{\url{https://github.com/lightningd/plugins/pull/66}}. 
 
 % ===========================================================================
@@ -122,7 +123,7 @@ The balance function $b$ can vary.
 The total capacity of a participant $u$ is denoted as $\kappa_u:=\displaystyle{\sum_{e\in U}c(e)}$.
 Using the last two definitions let us define the node balance coefficient for a participant $u$ as $\nu_u = \frac{\tau_u}{\kappa_u}$.
 
-We call a node $u$ {\bf balanced} if its channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ have the same value.\footnote{This value does by no means have to take a value of $0.5$ though it certainly seems to be a reasonable goal.}
+We call a node $u$ {\bf balanced} if its channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ have the same value.\footnote{This value does not have to take a value of $0.5$, but it certainly is a reasonable goal.}
 Consequently, we consider a node {\bf unbalanced}, if its local channel balance coefficients are unequal.
 Statistically, inequality of a distribution can be measured with the Gini coefficient.
 Thus, for a node $u$ with channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$ we define $G_u = \frac{\displaystyle{\sum_{i\in U} \sum_{j \in U}} | \zeta_i - \zeta_j |}{2 \displaystyle{\sum_{i \in U} \sum_{j \in U} \zeta_j}}$.
@@ -130,9 +131,8 @@ If $G_u = 0$ this means that the channel balance coefficients are equal.
 This value will be exactly the same as the node's balance coefficient $\nu_u$.
 In contrast, if $G_u = 1$ the channel balance coefficients are distributed in the most unequal way.
 
-Finally, $G$ denotes the imbalance of the network. $G = \displaystyle{\frac{1}{|V|}\sum_{v\in V}G_v}$. It is the mean of the imbalance values of all nodes in the network.
+Finally, $G$ denotes the imbalance of the network $G = \displaystyle{\frac{1}{|V|}\sum_{v\in V}G_v}$. It is the mean of the imbalance values of all nodes in the network.
 A perfectly balanced network would be achieved if $G$ takes the value of $0$ whereas the balance is poor if the value of $G$ is close to 1.
-
 Our goal is to find a balance function $b$ which minimizes $G$ given a privacy aware payment channel network with initial distribution of funds $\tau_{u_1},\dots,\tau_{u_n}$.
 The constraint to this optimization problem is that the total funds $\tau_u$ are fixed for every node $u \in V$ and any choice of the balance function $b$.
 As we lack knowledge about the global network state, we cannot apply standard optimization techniques such as gradient descent, conjugate gradient methods or simulated annealing.
@@ -141,7 +141,7 @@ We suggest to use a greedy heuristic in which every participant executes some op
 \subsection{Description of the rebalancing algorithm}
 \label{sec:Greedy Rebalancing Heuristic}
 
-Participants use the local knowledge and make local adjustments to estimate the optimization problem of finding $b$ such that $G$ is minimized.
+Participants use the local knowledge and make local adjustments trying to solve the optimization problem of finding $b$ such that $G$ is minimized.
 \begin{enumerate}
 \item A node $u$ computes its node balance coefficient $\nu_u$.
 \item $u$ then computes its channel balance coefficients $\zeta_{(u,v_1)},\dots,\zeta_{(u,v_d)}$.
@@ -163,7 +163,7 @@ Our approximation for \texttt{foaf} and \texttt{mpp} explains why the final resu
 
 We conducted our experiment on a snapshot of the public Lightning Network from October 2019.
 As channels are currently almost always opened by one side\footnote{Dual funded channels are not part of the protocol and no implementation is merged to any of the standard nodes} we randomly guessed who opened the channel by a coin flip and allocated the entire channel capacity to that node.
-As a result the histogram of all node balance coefficients had a mode of $0.5$ which is plausible with this random process.\footnote{We refer again to the long Version of this paper for more details.}
+As a result the histogram of all node balance coefficients had a mode of $0.5$ which is plausible with this random process\footnote{We refer again to the long Version of this paper for more details.}.
 
 After we randomly chose the founder of each channel we compute the largest strongly connected component to remove nodes which had the funds allocated in a way that would not allow any rebalancing.
 The strongly connected component consists of $2707$ nodes and $24161$ edges.
@@ -174,7 +174,7 @@ This is particularly true for the rebalancing in the friend of a friend network.
 
 In order to conduct the experiments we simulated the proposed algorithm and strategies in the following way.
 For each channel we computed up to $5000$ rebalancing cycles following the defined strategy.
-The number $5000$ was chosen to be as large as possible so that we were able to conduct the simulation within the $16$ GB of main memory of our machine.
+The number $5000$ was chosen to be as large as possible so that we were able to conduct the simulation on the $16$ GB of main memory of our machine.
 
 % ==========================================================
 \section{Results}
@@ -194,8 +194,8 @@ This is not more than $37$ rebalancing operations per node.
 Taking into account that the average node degree is $9$ this means that on average each node needs to successfully execute about $4$ rebalancing operations per channel.  
 This seams plausible in the sense that every channel gets rebalanced at least once.\footnote{Note, that due to the collaborative behaviour of nodes a node might also get its channels rebalanced in the rebalancing attempts of other nodes.}
 The multi-path rebalancing needs more operations which makes sense as we only rebalanced for a $20^{th}$ of the possible amount in the multi-path case since we wanted to have multiple other cycles to rebalance that particular channel.
-While \texttt{cycle4} seems to improve the balance more quickly it does not reach the minimum imbalance as well as the other strategies.
-In particular the algorithm converges to a local minimum rather quickly.
+While \texttt{cycle4} improves the balance more quickly, it does not reach the minimum imbalance as well as the other strategies.
+In particular, the algorithm converges to a local minimum rather quickly.
 Our experimental runs resulted in states that are not identical when we shuffled the order of cycles that we probed, however, the differences were negligible. 
 We guess that the local minimum might be close to global minimum of the optimization problem.
 
@@ -215,7 +215,7 @@ A success rate of $80\%$ is reached for an imbalance score of $0.43$.
 Comparing this to~\cref{fig:imbalancehovertime} we see that about $250$k rebalance operations are necessary to achieve this success rate.
 Even the worst performing algorithm achieves this success rate with far less than $100$k rebalancing operations and a much better overall imbalance score. 
 
-This effect - while expected as multi-path rebalancing uses smaller amounts - becomes more visible in the next experiment.
+This effect, while expected as multi-path rebalancing uses smaller amounts, is more pronounced in the next experiment.
 As $1$ Satoshi payments are not too useful in a real world setting we checked if the overall amounts that can be routed increase in a better balanced network.
 
 \begin{figure}
@@ -245,7 +245,7 @@ The result also indicates that the strategy for probing rebalancing cycles seems
 \end{figure}
 
 We look a little bit closer at the data point of the most balanced network with the friend of a friend strategy and compare it to the imbalanced network.
-Instead of just looking at the median we study the cumulative distribution function of the histogram in~\cref{fig:cdf_paymentsize}.
+Instead of only looking at the median we study the cumulative distribution function of the histogram in~\cref{fig:cdf_paymentsize}.
 We can see that in the imbalanced network almost $88.8\%$ of the paths are not able to forward a single Satoshi (meaning a $11.2\%$ success rate).
 This number drops below $1.7\%$ (meaning a $98.3\%$ success rate) for the balanced network.
 
@@ -259,10 +259,10 @@ We provide the cumulative distribution function of both distributions with in~\c
  \label{fig:cdf_gini}
  \end{figure}
 
-The Kolmogorov-Smirnoff distance takes a value of $0.74$.
+The Kolmogorov-Smirnoff distance reaches a value of $0.74$.
 This verifies the statistical significance of the rebalancing heuristic in comparison to staying with the imbalanced network.
 The median value of the Gini coefficients in the best balanced network we could acquire is about $0.15$.
-In comparison on the imbalanced network the median Gini coefficient takes the value of $0.5$.
+In comparison, on the imbalanced network the median Gini coefficient is $0.5$.
 
 Our results show that nodes do not need to strive for $\nu_u = 0.5$ and perfect local balance of their channels in order to produce high success rate of random payments.
 
@@ -270,31 +270,35 @@ Our results show that nodes do not need to strive for $\nu_u = 0.5$ and perfect 
 \section{Future Work}
 \label{sec:future}
 
-As the simulation was already consuming a lot of computational resources we did not check if the greedy heuristic is stable under concurrent payments and rebalancing operations taking place.
+As the simulation had consumed a lot of computational resources, we have not check if the greedy heuristic is stable under concurrent payments and rebalancing operations taking place.
 In a similar gist simulations on larger networks would be interesting but require more significant computational resources and time to be conducted.
 
 The current experiments have assumed a stable network topology. 
 However, every channel opening or closure, as well as every single payment, will change the imbalance of the network.
 It is therefore necessary to study how it adapts if the topology changes in real time due to opening or closing channels as well as a reallocation of funds due to payments that are taking place.
-It would be in particular interesting to see how this heuristic works in combination with JIT-Routing as this would unbalance nodes to provide liquidity which our heuristic would then redistribute over the friend of a friend network.
+In particular, it would be interesting to see how this heuristic works in combination with JIT-Routing as this would unbalance nodes to provide liquidity which our heuristic would then redistribute over the friend of a friend network.
 This would occur along all nodes on a path in intersecting friend of a friend networks.
 It would be interesting to see how this algorithm behaves together with Atomic Multipath Payments which are in the style of~\cite{bagaria2019boomerang} redundant but along our results carry at most $50000$ Satoshi. 
+
 
 % =======================================================================
 \section{Discussion}
 \label{sec:conclusion}
 
-
-Computing the rebalancing cycles is the most expensive operation in our simulation since we had to do it for every node of the network.
-If the greedy heuristic is implemented in a real payment channel network this is not too expensive for a single node.
-This holds in particular true if those cycles will only be searched within the friend of a friend network which is typically small enough.
+Computing the rebalancing cycles is the most expensive operation in our simulation.
+If the greedy heuristic is implemented in a real payment channel network, it would only be 
+done locally by each node, which in itself is not expensive.
+This holds true if those cycles will only be searched within the friend of a friend network which is typically small.
 As the results of the different strategies for finding cycles did not vary and for the previous reason we propose to stick to rebalancing in the friend of a friend network and introducing a communications protocol between nodes to collaboratively find such rebalancing cycles by sharing some information.
 
 
 % ==========================================================================================
 \section{Acknowledgements}
 \label{sec:ack}
-We are grateful to Vivek Bagaria and Joachim Neu for an interesting discussion about their and our work that initiated this particular research. We thank Stefan Richter for helpful comments on early drafts of this work. A special thank goes to Thomas Gottron, Christian Decker and Dmytro Piatkivskyi. Finally we thank the donors to \url{https://tallyco.in/s/lnbook} and Patreons supporting open knowledge. 
+
+We are grateful to Vivek Bagaria and Joachim Neu for an interesting discussion about their and our work that initiated this research. We thank Stefan Richter for helpful comments on early drafts of this work. A special thank goes to Thomas Gottron, Christian Decker and Dmytro Piatkivskyi. 
+% Finally we thank the donors to \url{https://tallyco.in/s/lnbook} and Patreons supporting open knowledge. 
+
 
 \bibliography{lightningNetworkHealth}
 \bibliographystyle{plain}
