@@ -71,7 +71,7 @@ The Lightning Network has been introduced in order to mitigate the scaling issue
 In order to protect users privacy while routing a payment through several payment channels privacy a payment network can use a source-based onion routing scheme, like the Sphinx Mix format~\cite{danezis2009sphinx}.
 While the Lightning Network, for example, shares the capacity of public channels with its participants through its gossip protocol, the local split of the capacity of the channels into the balance of its participants is not shared with the rest of the network for two reasons:
 (1) this would compromise the privacy as one could collect all changes of the channel balances and reconstruct the flow of payments;
-(2) propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technology.
+(2) propagating this information would essentially mean that every node in the network is made aware of every payment which would have the same poor scaling properties as blockchain technology and other broadcast networks.
 The decision to use source-based routing together with the unknown channel balances of the network results in a challenge for finding a path of payment channels so that all channels along the path have enough liquidity to be able to forward an attempted payment.
 Currently, this challenge is met by probing paths until one succeeds.
 It has been demonstrated that probing for paths can take more than 3 minutes for more than $5\%$ of the attempted payments~\cite{decker2019lnconf}. This leads to a poor payment latency and poor user experience.
@@ -297,7 +297,7 @@ As the results of the different strategies for finding cycles did not vary and f
 \label{sec:ack}
 
 We are grateful to Vivek Bagaria and Joachim Neu for an interesting discussion about their and our work that initiated this research. We thank Stefan Richter for helpful comments on early drafts of this work. A special thank goes to Thomas Gottron, Christian Decker and Dmytro Piatkivskyi. 
-% Finally we thank the donors to \url{https://tallyco.in/s/lnbook} and Patreons supporting open knowledge. 
+Finally we thank the donors to \url{https://tallyco.in/s/lnbook} and Patreons supporting open knowledge. 
 
 
 \bibliography{lightningNetworkHealth}
